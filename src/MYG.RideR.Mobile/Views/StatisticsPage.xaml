@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MYG.RideR.Mobile.Views.StatisticsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Statistics">
+    <VerticalStackLayout Padding="{StaticResource PagePadding}" Spacing="{StaticResource SpaceMd}">
+        <Label Style="{StaticResource PageTitleLabel}" Text="Statistics" />
+        <Border Style="{StaticResource CardStyle}">
+            <Label Style="{StaticResource CaptionLabel}" Text="Ride analytics surface reserved." />
+        </Border>
+    </VerticalStackLayout>
+</ContentPage>

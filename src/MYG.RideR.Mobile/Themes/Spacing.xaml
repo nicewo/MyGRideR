@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:sys="clr-namespace:System;assembly=netstandard">
+
+    <sys:Double x:Key="SpaceXs">4</sys:Double>
+    <sys:Double x:Key="SpaceSm">8</sys:Double>
+    <sys:Double x:Key="SpaceMd">16</sys:Double>
+    <sys:Double x:Key="SpaceLg">24</sys:Double>
+    <sys:Double x:Key="SpaceXl">32</sys:Double>
+    <Thickness x:Key="PagePadding">20,16</Thickness>
+    <Thickness x:Key="CardPadding">16</Thickness>
+</ResourceDictionary>

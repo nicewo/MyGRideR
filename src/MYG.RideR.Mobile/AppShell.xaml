@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="MYG.RideR.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:MYG.RideR.Mobile.Views"
+    FlyoutBehavior="Disabled"
+    Title="MYG RideR">
+
+    <TabBar>
+        <ShellContent
+            Title="Dashboard"
+            ContentTemplate="{DataTemplate views:DashboardPage}"
+            Route="dashboard" />
+
+        <ShellContent
+            Title="Trips"
+            ContentTemplate="{DataTemplate views:TripsPage}"
+            Route="trips" />
+
+        <ShellContent
+            Title="Statistics"
+            ContentTemplate="{DataTemplate views:StatisticsPage}"
+            Route="statistics" />
+
+        <ShellContent
+            Title="Settings"
+            ContentTemplate="{DataTemplate views:SettingsPage}"
+            Route="settings" />
+    </TabBar>
+
+</Shell>

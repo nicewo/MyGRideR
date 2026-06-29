@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Style x:Key="PageTitleLabel" TargetType="Label">
+        <Setter Property="FontFamily" Value="{StaticResource FontSemibold}" />
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+    </Style>
+
+    <Style x:Key="WidgetTitleLabel" TargetType="Label">
+        <Setter Property="FontFamily" Value="{StaticResource FontSemibold}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+    </Style>
+
+    <Style x:Key="WidgetValueLabel" TargetType="Label">
+        <Setter Property="FontFamily" Value="{StaticResource FontSemibold}" />
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+    </Style>
+
+    <Style x:Key="CaptionLabel" TargetType="Label">
+        <Setter Property="FontFamily" Value="{StaticResource FontRegular}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+    </Style>
+</ResourceDictionary>
