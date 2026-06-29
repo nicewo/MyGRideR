@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentView
+    x:Class="MYG.RideR.Mobile.Controls.StatCard"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Name="Root">
+
+    <Border
+        Padding="14"
+        BackgroundColor="#11161E"
+        Stroke="#1E2732"
+        StrokeShape="RoundRectangle 18"
+        StrokeThickness="1">
+
+        <VerticalStackLayout
+            HorizontalOptions="Center"
+            Spacing="2"
+            VerticalOptions="Center">
+
+            <!--  Başlık  -->
+
+            <Label
+                FontAttributes="Bold"
+                FontSize="11"
+                HorizontalOptions="Center"
+                Text="{Binding Title, Source={x:Reference Root}}"
+                TextColor="#7E8B99" />
+
+            <!--  Değer  -->
+
+            <Label
+                FontAttributes="Bold"
+                FontSize="26"
+                HorizontalOptions="Center"
+                Text="{Binding Value, Source={x:Reference Root}}"
+                TextColor="White" />
+
+            <!--  Birim  -->
+
+            <Label
+                FontSize="11"
+                HorizontalOptions="Center"
+                Text="{Binding Unit, Source={x:Reference Root}}"
+                TextColor="#00BFFF" />
+
+        </VerticalStackLayout>
+
+    </Border>
+
+</ContentView>

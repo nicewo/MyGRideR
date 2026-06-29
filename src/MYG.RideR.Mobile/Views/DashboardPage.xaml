@@ -1,120 +1,84 @@
 <?xml version="1.0" encoding="utf-8" ?>
+
 <ContentPage
     x:Class="MYG.RideR.Mobile.Views.DashboardPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:MYG.RideR.Mobile.Controls"
     xmlns:viewModels="clr-namespace:MYG.RideR.Mobile.ViewModels"
     x:DataType="viewModels:DashboardViewModel"
-    Title="Dashboard">
+    BackgroundColor="#05070B"
+    Shell.NavBarIsVisible="False">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="{StaticResource PagePadding}" Spacing="{StaticResource SpaceMd}">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource SpaceMd}">
-                <VerticalStackLayout Spacing="{StaticResource SpaceXs}">
-                    <Label Style="{StaticResource PageTitleLabel}" Text="MYG RideR" />
-                    <Label Style="{StaticResource CaptionLabel}" Text="Android dashboard foundation" />
-                </VerticalStackLayout>
-                <Border
-                    Grid.Column="1"
-                    Padding="12,8"
-                    BackgroundColor="{StaticResource SurfaceAlt}"
-                    Stroke="{StaticResource StrokeSubtle}"
-                    StrokeShape="RoundRectangle 8">
-                    <Label
-                        FontFamily="{StaticResource FontSemibold}"
-                        FontSize="13"
-                        Text="{Binding GpsStatus}"
-                        TextColor="{StaticResource Accent}" />
-                </Border>
-            </Grid>
+    <Grid>
 
-            <Border
-                Padding="20"
-                BackgroundColor="{StaticResource SurfaceElevated}"
-                Stroke="{StaticResource StrokeSubtle}"
-                StrokeShape="RoundRectangle 8">
-                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="{StaticResource SpaceSm}">
-                    <Label Style="{StaticResource WidgetTitleLabel}" Text="Speed" />
-                    <Label
-                        Grid.Row="1"
-                        FontFamily="{StaticResource FontSemibold}"
-                        FontSize="64"
-                        Text="{Binding SpeedKmh}"
-                        TextColor="{StaticResource TextPrimary}" />
-                    <Label
-                        Grid.Row="1"
-                        Margin="0,0,0,12"
-                        HorizontalOptions="End"
-                        VerticalOptions="End"
-                        Style="{StaticResource CaptionLabel}"
-                        Text="km/h" />
-                    <Label
-                        Grid.Column="1"
-                        Grid.RowSpan="2"
-                        FontFamily="{StaticResource FontSemibold}"
-                        FontSize="22"
-                        Text="{Binding Clock}"
-                        TextColor="{StaticResource AccentAlt}" />
-                </Grid>
-            </Border>
+        <!--  Ana Satırlar  -->
+        <Grid.RowDefinitions>
 
-            <Border Style="{StaticResource CardStyle}" HeightRequest="210">
-                <Grid RowDefinitions="Auto,*" RowSpacing="{StaticResource SpaceMd}">
-                    <Label Style="{StaticResource WidgetTitleLabel}" Text="Map Placeholder" />
-                    <Grid Grid.Row="1" BackgroundColor="{StaticResource SurfaceAlt}">
-                        <BoxView
-                            HeightRequest="1"
-                            BackgroundColor="{StaticResource StrokeSubtle}"
-                            VerticalOptions="Center" />
-                        <BoxView
-                            WidthRequest="1"
-                            BackgroundColor="{StaticResource StrokeSubtle}"
-                            HorizontalOptions="Center" />
-                        <Label
-                            HorizontalOptions="Center"
-                            Style="{StaticResource CaptionLabel}"
-                            Text="Map integration reserved"
-                            VerticalOptions="Center" />
-                    </Grid>
-                </Grid>
-            </Border>
+            <RowDefinition Height="70" />
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="{StaticResource SpaceMd}" RowDefinitions="Auto,Auto,Auto" RowSpacing="{StaticResource SpaceMd}">
-                <Border Style="{StaticResource WidgetBaseStyle}">
-                    <VerticalStackLayout Spacing="{StaticResource SpaceSm}">
-                        <Label Style="{StaticResource WidgetTitleLabel}" Text="Trip Time" />
-                        <Label Style="{StaticResource WidgetValueLabel}" Text="{Binding TripTime}" />
-                    </VerticalStackLayout>
-                </Border>
+            <RowDefinition Height="330" />
 
-                <Border Grid.Column="1" Style="{StaticResource WidgetBaseStyle}">
-                    <VerticalStackLayout Spacing="{StaticResource SpaceSm}">
-                        <Label Style="{StaticResource WidgetTitleLabel}" Text="Distance" />
-                        <Label Style="{StaticResource WidgetValueLabel}" Text="{Binding DistanceKm, StringFormat='{0:F1} km'}" />
-                    </VerticalStackLayout>
-                </Border>
+            <RowDefinition Height="Auto" />
 
-                <Border Grid.Row="1" Style="{StaticResource WidgetBaseStyle}">
-                    <VerticalStackLayout Spacing="{StaticResource SpaceSm}">
-                        <Label Style="{StaticResource WidgetTitleLabel}" Text="Average Speed" />
-                        <Label Style="{StaticResource WidgetValueLabel}" Text="{Binding AverageSpeedKmh, StringFormat='{0} km/h'}" />
-                    </VerticalStackLayout>
-                </Border>
+            <RowDefinition Height="*" />
 
-                <Border Grid.Column="1" Grid.Row="1" Style="{StaticResource WidgetBaseStyle}">
-                    <VerticalStackLayout Spacing="{StaticResource SpaceSm}">
-                        <Label Style="{StaticResource WidgetTitleLabel}" Text="Maximum Speed" />
-                        <Label Style="{StaticResource WidgetValueLabel}" Text="{Binding MaximumSpeedKmh, StringFormat='{0} km/h'}" />
-                    </VerticalStackLayout>
-                </Border>
+            <RowDefinition Height="80" />
 
-                <Border Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource WidgetBaseStyle}">
-                    <VerticalStackLayout Spacing="{StaticResource SpaceSm}">
-                        <Label Style="{StaticResource WidgetTitleLabel}" Text="GPS Status" />
-                        <Label Style="{StaticResource WidgetValueLabel}" Text="{Binding GpsStatus}" />
-                    </VerticalStackLayout>
-                </Border>
-            </Grid>
-        </VerticalStackLayout>
-    </ScrollView>
+        </Grid.RowDefinitions>
+
+        <!--  Üst Bar  -->
+        <controls:TopStatusBar Grid.Row="0" />
+
+        <!--  Büyük Hız Göstergesi  -->
+        <Grid Grid.Row="1">
+
+            <controls:SpeedGauge HorizontalOptions="Center" VerticalOptions="Center" />
+
+        </Grid>
+        <!--  İstatistikler  -->
+
+        <Grid
+            Grid.Row="2"
+            Margin="18,8"
+            ColumnDefinitions="*,*"
+            ColumnSpacing="10"
+            RowDefinitions="Auto,Auto"
+            RowSpacing="10">
+
+            <controls:StatCard
+                Title="MESAFE"
+                Unit="km"
+                Value="{Binding DistanceKm}" />
+
+            <controls:StatCard
+                Title="ORT."
+                Grid.Column="1"
+                Unit="km/h"
+                Value="{Binding AverageSpeedKmh}" />
+
+            <controls:StatCard
+                Title="MAX"
+                Grid.Row="1"
+                Unit="km/h"
+                Value="{Binding MaximumSpeedKmh}" />
+
+            <controls:StatCard
+                Title="SÜRE"
+                Grid.Row="1"
+                Grid.Column="1"
+                Value="{Binding TripTime}" />
+
+        </Grid>
+
+        <!--  Harita  -->
+
+        <controls:MapPanel Grid.Row="3" Margin="18,12,18,12" />
+
+        <!--  Alt Menü  -->
+
+        <controls:BottomToolbar Grid.Row="4" />
+
+    </Grid>
+
 </ContentPage>

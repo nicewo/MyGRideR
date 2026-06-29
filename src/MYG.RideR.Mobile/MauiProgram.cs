@@ -35,8 +35,8 @@ public static class MauiProgram
             .AddTransient<DashboardPage>()
             .AddTransient<TripsPage>()
             .AddTransient<StatisticsPage>()
-            .AddTransient<SettingsPage>();
-
+            .AddTransient<SettingsPage>()
+            .AddSingleton<IClockService, ClockService>();
 #if DEBUG
         builder.Logging.AddDebug();
 #endif

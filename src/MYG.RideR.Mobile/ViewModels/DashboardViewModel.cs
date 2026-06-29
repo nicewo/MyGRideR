@@ -7,6 +7,7 @@ namespace MYG.RideR.Mobile.ViewModels;
 public partial class DashboardViewModel : ObservableObject
 {
     private readonly IDashboardDataService _dashboardDataService;
+    private readonly IClockService _clockService;
     private int _speedKmh;
     private string _clock = "--:--";
     private string _gpsStatus = "Unavailable";
@@ -64,11 +65,23 @@ public partial class DashboardViewModel : ObservableObject
         private set => SetProperty(ref _isBusy, value);
     }
 
-    public DashboardViewModel(IDashboardDataService dashboardDataService)
+    public DashboardViewModel(
+        IDashboardDataService dashboardDataService,
+        IClockService clockService)
     {
         _dashboardDataService = dashboardDataService;
-    }
+        _clockService = clockService;
 
+        _clockService.TimeChanged += ClockService_TimeChanged;
+        _clockService.Start();
+    }
+    private void ClockService_TimeChanged(DateTime now)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Clock = now.ToString("HH:mm:ss");
+        });
+    }
     [RelayCommand]
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {

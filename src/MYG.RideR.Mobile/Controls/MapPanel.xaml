@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentView
+    x:Class="MYG.RideR.Mobile.Controls.MapPanel"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Border
+        Margin="0"
+        Padding="0"
+        BackgroundColor="#11161E"
+        Stroke="#1E2732"
+        StrokeShape="RoundRectangle 22"
+        StrokeThickness="1">
+
+        <Grid>
+
+            <!--  Buraya gerçek harita gelecek  -->
+
+            <Grid BackgroundColor="#0D131A">
+
+                <Label
+                    FontSize="18"
+                    HorizontalOptions="Center"
+                    Text="🗺️"
+                    TextColor="#5D6B78"
+                    VerticalOptions="Center" />
+
+            </Grid>
+
+            <!--  Üst Bilgi  -->
+
+            <Border
+                Margin="12"
+                Padding="12,8"
+                BackgroundColor="#CC11161E"
+                HorizontalOptions="Start"
+                StrokeShape="RoundRectangle 14"
+                StrokeThickness="0"
+                VerticalOptions="Start">
+
+                <HorizontalStackLayout Spacing="8">
+
+                    <Ellipse
+                        Fill="#00D26A"
+                        HeightRequest="10"
+                        WidthRequest="10" />
+
+                    <Label
+                        FontSize="13"
+                        Text="GPS Aktif"
+                        TextColor="White" />
+
+                </HorizontalStackLayout>
+
+            </Border>
+
+            <!--  Sağ Alt Konum  -->
+
+            <Border
+                Margin="12"
+                Padding="12,8"
+                BackgroundColor="#CC11161E"
+                HorizontalOptions="End"
+                StrokeShape="RoundRectangle 14"
+                StrokeThickness="0"
+                VerticalOptions="End">
+
+                <Label
+                    FontSize="12"
+                    Text="Konum Bekleniyor..."
+                    TextColor="#9FB0C2" />
+
+            </Border>
+
+        </Grid>
+
+    </Border>
+
+</ContentView>
