@@ -1,4 +1,4 @@
-﻿namespace MYG.RideR.Mobile;
+namespace MYG.RideR.Mobile;
 
 public partial class App : Microsoft.Maui.Controls.Application
 {

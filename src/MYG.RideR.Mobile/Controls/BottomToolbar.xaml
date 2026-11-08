@@ -16,81 +16,116 @@
         <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
 
             <!--  Dashboard  -->
-            <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
+            <Border
+                Grid.Column="0"
+                BackgroundColor="Transparent"
+                StrokeThickness="0">
 
-                <Label
-                    FontSize="22"
-                    HorizontalOptions="Center"
-                    Text="🏠"
-                    TextColor="#00BFFF" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="DashboardTapped" />
+                </Border.GestureRecognizers>
 
-                <Label
-                    FontSize="11"
-                    HorizontalOptions="Center"
-                    Text="Dashboard"
-                    TextColor="White" />
+                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
 
-            </VerticalStackLayout>
+                    <Label
+                        FontSize="22"
+                        HorizontalOptions="Center"
+                        Text="🏠"
+                        TextColor="#00BFFF" />
+
+                    <Label
+                        FontSize="11"
+                        HorizontalOptions="Center"
+                        Text="Dashboard"
+                        TextColor="White" />
+
+                </VerticalStackLayout>
+
+            </Border>
 
             <!--  Sürüşler  -->
-            <VerticalStackLayout
+            <Border
                 Grid.Column="1"
-                HorizontalOptions="Center"
-                Spacing="4">
+                BackgroundColor="Transparent"
+                StrokeThickness="0">
 
-                <Label
-                    FontSize="22"
-                    HorizontalOptions="Center"
-                    Text="🛣️"
-                    TextColor="#A5B4C3" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="TripsTapped" />
+                </Border.GestureRecognizers>
 
-                <Label
-                    FontSize="11"
-                    HorizontalOptions="Center"
-                    Text="Trips"
-                    TextColor="#A5B4C3" />
+                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
 
-            </VerticalStackLayout>
+                    <Label
+                        FontSize="22"
+                        HorizontalOptions="Center"
+                        Text="🛣️"
+                        TextColor="#00BFFF" />
+
+                    <Label
+                        FontSize="11"
+                        HorizontalOptions="Center"
+                        Text="Trips"
+                        TextColor="White" />
+
+                </VerticalStackLayout>
+
+            </Border>
 
             <!--  İstatistik  -->
-            <VerticalStackLayout
+            <Border
                 Grid.Column="2"
-                HorizontalOptions="Center"
-                Spacing="4">
+                BackgroundColor="Transparent"
+                StrokeThickness="0">
 
-                <Label
-                    FontSize="22"
-                    HorizontalOptions="Center"
-                    Text="📊"
-                    TextColor="#A5B4C3" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="StatisticsTapped" />
+                </Border.GestureRecognizers>
 
-                <Label
-                    FontSize="11"
-                    HorizontalOptions="Center"
-                    Text="Stats"
-                    TextColor="#A5B4C3" />
+                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
 
-            </VerticalStackLayout>
+                    <Label
+                        FontSize="22"
+                        HorizontalOptions="Center"
+                        Text="📊"
+                        TextColor="#00BFFF" />
+
+                    <Label
+                        FontSize="11"
+                        HorizontalOptions="Center"
+                        Text="Statistics"
+                        TextColor="White" />
+
+                </VerticalStackLayout>
+
+            </Border>
 
             <!--  Ayarlar  -->
-            <VerticalStackLayout
+            <Border
                 Grid.Column="3"
-                HorizontalOptions="Center"
-                Spacing="4">
+                BackgroundColor="Transparent"
+                StrokeThickness="0">
 
-                <Label
-                    FontSize="22"
-                    HorizontalOptions="Center"
-                    Text="⚙️"
-                    TextColor="#A5B4C3" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="SettingsTapped" />
+                </Border.GestureRecognizers>
 
-                <Label
-                    FontSize="11"
-                    HorizontalOptions="Center"
-                    Text="Settings"
-                    TextColor="#A5B4C3" />
+                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
 
-            </VerticalStackLayout>
+                    <Label
+                        FontSize="22"
+                        HorizontalOptions="Center"
+                        Text="⚙️"
+                        TextColor="#00BFFF" />
+
+                    <Label
+                        FontSize="11"
+                        HorizontalOptions="Center"
+                        Text="Settings"
+                        TextColor="White" />
+
+                </VerticalStackLayout>
+
+            </Border>
 
         </Grid>
 
