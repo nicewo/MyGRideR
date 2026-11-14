@@ -58,6 +58,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- e_sqlite3 android/ios 2.1.11 are pulled in by Microsoft.Data.Sqlite's bundle; no patched platform builds exist yet. -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+  </ItemGroup>
+
+  <ItemGroup>
 
     <PackageReference Include="CommunityToolkit.Maui"
                       Version="12.3.0" />

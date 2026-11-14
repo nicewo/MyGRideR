@@ -29,6 +29,23 @@ public sealed class Trip
 
     public static Trip Start(DateTimeOffset startedAt) => new(Guid.NewGuid(), startedAt);
 
+    public static Trip Restore(
+        Guid id,
+        DateTimeOffset startedAt,
+        DateTimeOffset? endedAt,
+        IEnumerable<LocationSample> samples)
+    {
+        ArgumentNullException.ThrowIfNull(samples);
+
+        var trip = new Trip(id, startedAt);
+        foreach (var sample in samples)
+            trip.AddSample(sample);
+        if (endedAt is { } end)
+            trip.Complete(end);
+
+        return trip;
+    }
+
     public void AddSample(LocationSample sample)
     {
         if (Status != TripStatus.Recording)

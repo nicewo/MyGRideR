@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\MYG.RideR.Application\MYG.RideR.Application.csproj" />
     <ProjectReference Include="..\..\src\MYG.RideR.Core\MYG.RideR.Core.csproj" />
+    <ProjectReference Include="..\..\src\MYG.RideR.Infrastructure\MYG.RideR.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\MYG.RideR.Shared\MYG.RideR.Shared.csproj" />
   </ItemGroup>
 
