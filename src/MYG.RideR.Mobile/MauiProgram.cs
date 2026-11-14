@@ -1,3 +1,4 @@
+using SkiaSharp.Views.Maui.Controls.Hosting;
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using MYG.RideR.Application.Abstractions;
@@ -22,7 +23,8 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             })
-            .UseMauiCommunityToolkit();
+            .UseMauiCommunityToolkit()
+            .UseSkiaSharp();
 
         builder.Services
             .AddApplicationServices()

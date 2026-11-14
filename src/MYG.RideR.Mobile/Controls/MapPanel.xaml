@@ -3,7 +3,8 @@
 <ContentView
     x:Class="MYG.RideR.Mobile.Controls.MapPanel"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui">
 
     <Border
         Margin="0"
@@ -15,18 +16,15 @@
 
         <Grid>
 
-            <!--  Buraya gerçek harita gelecek  -->
+            <mapsui:MapControl x:Name="Map" BackgroundColor="{StaticResource MapBackground}" />
 
-            <Grid BackgroundColor="{StaticResource MapBackground}">
-
-                <Label
-                    FontSize="18"
-                    HorizontalOptions="Center"
-                    Text="🗺️"
-                    TextColor="{StaticResource TextMutedAlt}"
-                    VerticalOptions="Center" />
-
-            </Grid>
+            <Label
+                Margin="6,0,6,4"
+                FontSize="10"
+                HorizontalOptions="Start"
+                Text="© OpenStreetMap contributors"
+                TextColor="{StaticResource TextMutedAlt}"
+                VerticalOptions="End" />
 
             <!--  Üst Bilgi  -->
 
