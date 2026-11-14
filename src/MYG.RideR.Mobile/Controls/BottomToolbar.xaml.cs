@@ -4,28 +4,25 @@ namespace MYG.RideR.Mobile.Controls;
 
 public partial class BottomToolbar : ContentView
 {
+    private bool _voiceAlerts = true;
+
     public BottomToolbar()
     {
         InitializeComponent();
     }
 
-    private async void DashboardTapped(object sender, TappedEventArgs e)
-    {
-        await Shell.Current.GoToAsync("//dashboard");
-    }
-
-    private async void TripsTapped(object sender, TappedEventArgs e)
-    {
+    private async void RouteClicked(object? sender, EventArgs e) =>
         await Shell.Current.GoToAsync(nameof(TripsPage));
-    }
 
-    private async void StatisticsTapped(object sender, TappedEventArgs e)
-    {
-        await Shell.Current.GoToAsync(nameof(StatisticsPage));
-    }
-
-    private async void SettingsTapped(object sender, TappedEventArgs e)
-    {
+    private async void SettingsClicked(object? sender, EventArgs e) =>
         await Shell.Current.GoToAsync(nameof(SettingsPage));
+
+    private async void PhotoClicked(object? sender, EventArgs e) =>
+        await Shell.Current.DisplayAlert("Fotoğraf Ekle", "Bu özellik yakında eklenecek.", "Tamam");
+
+    private async void AlertClicked(object? sender, EventArgs e)
+    {
+        _voiceAlerts = !_voiceAlerts;
+        await Shell.Current.DisplayAlert("Sesli Uyarı", _voiceAlerts ? "Sesli uyarılar açık." : "Sesli uyarılar kapalı.", "Tamam");
     }
 }

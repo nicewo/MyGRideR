@@ -19,7 +19,34 @@ public partial class DashboardViewModel : ObservableObject
     public partial string Clock { get; private set; } = DateTime.Now.ToString("HH:mm:ss");
 
     [ObservableProperty]
+    public partial string ClockShort { get; private set; } = DateTime.Now.ToString("HH:mm");
+
+    [ObservableProperty]
+    public partial string DateText { get; private set; } = FormatDate(DateTime.Now);
+
+    [ObservableProperty]
     public partial string GpsStatus { get; private set; } = "GPS hazır değil";
+
+    [ObservableProperty]
+    public partial string Gear { get; private set; } = "-";
+
+    [ObservableProperty]
+    public partial int AltitudeM { get; private set; }
+
+    [ObservableProperty]
+    public partial string StopTime { get; private set; } = "00:00";
+
+    [ObservableProperty]
+    public partial string HeadingText { get; private set; } = "K 0°";
+
+    [ObservableProperty]
+    public partial string SatelliteText { get; private set; } = "0/0";
+
+    [ObservableProperty]
+    public partial string BatteryText { get; private set; } = "%--";
+
+    [ObservableProperty]
+    public partial double FuelRatio { get; private set; } = 0.5;
 
     [ObservableProperty]
     public partial string TripTime { get; private set; } = "00:00";
@@ -70,9 +97,14 @@ public partial class DashboardViewModel : ObservableObject
         MainThread.BeginInvokeOnMainThread(() =>
         {
             Clock = now.ToString("HH:mm:ss");
+            ClockShort = now.ToString("HH:mm");
+            DateText = FormatDate(now);
             Refresh();
         });
     }
+
+    private static string FormatDate(DateTime d) =>
+        d.ToString("d MMMM yyyy dddd", new System.Globalization.CultureInfo("tr-TR"));
 
     [RelayCommand]
     public Task InitializeAsync()
@@ -116,7 +148,7 @@ public partial class DashboardViewModel : ObservableObject
     {
         var trip = _tripRecorder.CurrentTrip;
         IsRecording = trip is not null;
-        RecordButtonText = IsRecording ? "DURDUR" : "BAŞLA";
+        RecordButtonText = IsRecording ? "DURDUR" : "BAŞLAT";
 
         if (trip is null)
         {

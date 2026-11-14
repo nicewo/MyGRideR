@@ -28,6 +28,19 @@ public partial class StatCard : ContentView
             typeof(StatCard),
             string.Empty);
 
+    public static readonly BindableProperty IconProperty =
+        BindableProperty.Create(
+            nameof(Icon),
+            typeof(string),
+            typeof(StatCard),
+            string.Empty);
+
+    public string Icon
+    {
+        get => (string)GetValue(IconProperty);
+        set => SetValue(IconProperty, value);
+    }
+
     public string Title
     {
         get => (string)GetValue(TitleProperty);

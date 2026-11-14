@@ -10,83 +10,219 @@
     BackgroundColor="{StaticResource PageBackground}"
     Shell.NavBarIsVisible="False">
 
-    <Grid>
+    <Grid RowDefinitions="56,*,Auto">
 
-        <!--  Ana Satırlar  -->
-        <Grid.RowDefinitions>
-
-            <RowDefinition Height="70" />
-
-            <RowDefinition Height="330" />
-
-            <RowDefinition Height="Auto" />
-
-            <RowDefinition Height="*" />
-
-            <RowDefinition Height="80" />
-
-        </Grid.RowDefinitions>
-
-        <!--  Üst Bar  -->
         <controls:TopStatusBar Grid.Row="0" />
 
-        <!--  Büyük Hız Göstergesi  -->
-        <Grid Grid.Row="1">
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="12,0" Spacing="10">
 
-            <controls:SpeedGauge HorizontalOptions="Center" VerticalOptions="Center" />
+                <!--  Saat + Pusula  -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Border
+                        Padding="14,10"
+                        BackgroundColor="{StaticResource PanelBackground}"
+                        Stroke="{StaticResource PanelStroke}"
+                        StrokeShape="RoundRectangle 14">
+                        <VerticalStackLayout>
+                            <Label
+                                FontAttributes="Bold"
+                                FontSize="40"
+                                Text="{Binding ClockShort}"
+                                TextColor="White" />
+                            <Label
+                                FontSize="12"
+                                Text="{Binding DateText}"
+                                TextColor="{StaticResource TextSecondary}" />
+                        </VerticalStackLayout>
+                    </Border>
 
-        </Grid>
-        <!--  İstatistikler  -->
+                    <Border
+                        Grid.Column="1"
+                        Padding="14,10"
+                        BackgroundColor="{StaticResource PanelBackground}"
+                        Stroke="{StaticResource PanelStroke}"
+                        StrokeShape="RoundRectangle 14">
+                        <Grid ColumnDefinitions="*,*">
+                            <VerticalStackLayout VerticalOptions="Center">
+                                <Label
+                                    FontSize="20"
+                                    Text="🧭"
+                                    TextColor="{StaticResource Alert}" />
+                                <Label
+                                    FontAttributes="Bold"
+                                    FontSize="14"
+                                    Text="{Binding HeadingText}"
+                                    TextColor="White" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                <Label
+                                    FontAttributes="Bold"
+                                    FontSize="20"
+                                    Text="{Binding SatelliteText}"
+                                    TextColor="{StaticResource Success}" />
+                                <Label
+                                    FontSize="10"
+                                    Text="UYDU"
+                                    TextColor="{StaticResource NeonBlue}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </Grid>
 
-        <Grid
-            Grid.Row="2"
-            Margin="18,8"
-            ColumnDefinitions="*,*"
-            ColumnSpacing="10"
-            RowDefinitions="Auto,Auto"
-            RowSpacing="10">
+                <!--  Gösterge + yan kartlar  -->
+                <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="6">
+                    <VerticalStackLayout Spacing="8" VerticalOptions="Center">
+                        <controls:StatCard
+                            Title="MESAFE"
+                            Icon="📍"
+                            Unit="km"
+                            Value="{Binding DistanceKm}" />
+                        <controls:StatCard
+                            Title="SÜRÜŞ SÜRESİ"
+                            Icon="⏱"
+                            Unit="dk"
+                            Value="{Binding TripTime}" />
+                        <controls:StatCard
+                            Title="RAKIM"
+                            Icon="⛰"
+                            Unit="m"
+                            Value="{Binding AltitudeM}" />
+                    </VerticalStackLayout>
 
-            <controls:StatCard
-                Title="MESAFE"
-                Unit="km"
-                Value="{Binding DistanceKm}" />
+                    <controls:SpeedGauge
+                        Grid.Column="1"
+                        Gear="{Binding Gear}"
+                        SpeedKmh="{Binding SpeedKmh}"
+                        VerticalOptions="Center" />
 
-            <controls:StatCard
-                Title="ORT."
-                Grid.Column="1"
-                Unit="km/h"
-                Value="{Binding AverageSpeedKmh}" />
+                    <VerticalStackLayout
+                        Grid.Column="2"
+                        Spacing="8"
+                        VerticalOptions="Center">
+                        <controls:StatCard
+                            Title="ORTALAMA"
+                            Icon="⚡"
+                            Unit="km/h"
+                            Value="{Binding AverageSpeedKmh}" />
+                        <controls:StatCard
+                            Title="MAKSİMUM"
+                            Icon="🚀"
+                            Unit="km/h"
+                            Value="{Binding MaximumSpeedKmh}" />
+                        <controls:StatCard
+                            Title="DURMA SÜRESİ"
+                            Icon="⏸"
+                            Unit="dk"
+                            Value="{Binding StopTime}" />
+                    </VerticalStackLayout>
+                </Grid>
 
-            <controls:StatCard
-                Title="MAX"
-                Grid.Row="1"
-                Unit="km/h"
-                Value="{Binding MaximumSpeedKmh}" />
+                <!--  Yakıt + GPS doğruluğu  -->
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <VerticalStackLayout VerticalOptions="Center">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                            <Label
+                                FontSize="12"
+                                Text="E"
+                                TextColor="{StaticResource Alert}" />
+                            <ProgressBar
+                                Grid.Column="1"
+                                Progress="{Binding FuelRatio}"
+                                ProgressColor="{StaticResource NeonBlue}"
+                                VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="2"
+                                FontSize="12"
+                                Text="F"
+                                TextColor="{StaticResource Success}" />
+                        </Grid>
+                    </VerticalStackLayout>
+                    <Border
+                        Grid.Column="1"
+                        Padding="12,6"
+                        BackgroundColor="{StaticResource PanelBackground}"
+                        Stroke="{StaticResource Success}"
+                        StrokeShape="RoundRectangle 14">
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="11"
+                            Text="{Binding GpsStatus}"
+                            TextColor="{StaticResource Success}" />
+                    </Border>
+                </Grid>
 
-            <controls:StatCard
-                Title="SÜRE"
-                Grid.Row="1"
-                Grid.Column="1"
-                Value="{Binding TripTime}" />
+                <!--  Harita  -->
+                <controls:MapPanel HeightRequest="260" />
 
-        </Grid>
+                <!--  Grafikler  -->
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <Border
+                        Padding="10"
+                        BackgroundColor="{StaticResource PanelBackground}"
+                        HeightRequest="90"
+                        Stroke="{StaticResource PanelStroke}"
+                        StrokeShape="RoundRectangle 14">
+                        <VerticalStackLayout>
+                            <Label
+                                FontSize="10"
+                                Text="HIZ GRAFİĞİ"
+                                TextColor="{StaticResource NeonBlue}" />
+                            <Label
+                                FontAttributes="Bold"
+                                FontSize="18"
+                                Text="{Binding MaximumSpeedKmh, StringFormat='{0} km/h'}"
+                                TextColor="White" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border
+                        Grid.Column="1"
+                        Padding="10"
+                        BackgroundColor="{StaticResource PanelBackground}"
+                        HeightRequest="90"
+                        Stroke="{StaticResource PanelStroke}"
+                        StrokeShape="RoundRectangle 14">
+                        <VerticalStackLayout HorizontalOptions="Center">
+                            <Label
+                                FontSize="10"
+                                Text="TOPLAM MESAFE"
+                                TextColor="{StaticResource NeonBlue}" />
+                            <Label
+                                FontAttributes="Bold"
+                                FontSize="22"
+                                Text="{Binding DistanceKm}"
+                                TextColor="White" />
+                            <Label
+                                FontSize="11"
+                                Text="km"
+                                TextColor="{StaticResource TextSecondary}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border
+                        Grid.Column="2"
+                        Padding="10"
+                        BackgroundColor="{StaticResource PanelBackground}"
+                        HeightRequest="90"
+                        Stroke="{StaticResource PanelStroke}"
+                        StrokeShape="RoundRectangle 14">
+                        <VerticalStackLayout>
+                            <Label
+                                FontSize="10"
+                                Text="RAKIM GRAFİĞİ"
+                                TextColor="{StaticResource Success}" />
+                            <Label
+                                FontAttributes="Bold"
+                                FontSize="18"
+                                Text="{Binding AltitudeM, StringFormat='{0} m'}"
+                                TextColor="White" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
 
-        <!--  Harita  -->
+            </VerticalStackLayout>
+        </ScrollView>
 
-        <controls:MapPanel Grid.Row="3" Margin="18,12,18,12" />
-
-        <Button
-            Grid.Row="3"
-            Margin="0,0,0,24"
-            Padding="32,0"
-            HorizontalOptions="Center"
-            VerticalOptions="End"
-            Command="{Binding ToggleRecordingCommand}"
-            Text="{Binding RecordButtonText}" />
-
-        <!--  Alt Menü  -->
-
-        <controls:BottomToolbar Grid.Row="4" />
+        <controls:BottomToolbar Grid.Row="2" />
 
     </Grid>
 

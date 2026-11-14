@@ -6,126 +6,58 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <Border
-        Margin="16,0,16,16"
-        Padding="12"
+        Margin="12,0,12,10"
+        Padding="6,4"
         BackgroundColor="{StaticResource PanelBackground}"
         Stroke="{StaticResource PanelStroke}"
         StrokeShape="RoundRectangle 24"
         StrokeThickness="1">
 
-        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
+        <Grid ColumnDefinitions="*,*,1.3*,*,*">
 
-            <!--  Dashboard  -->
-            <Border
-                Grid.Column="0"
+            <Button
                 BackgroundColor="Transparent"
-                StrokeThickness="0">
+                Clicked="RouteClicked"
+                ContentLayout="Top,2"
+                FontSize="11"
+                Text="Rota"
+                TextColor="White" />
 
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="DashboardTapped" />
-                </Border.GestureRecognizers>
-
-                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
-
-                    <Label
-                        FontSize="22"
-                        HorizontalOptions="Center"
-                        Text="🏠"
-                        TextColor="{StaticResource NeonBlue}" />
-
-                    <Label
-                        FontSize="11"
-                        HorizontalOptions="Center"
-                        Text="Dashboard"
-                        TextColor="White" />
-
-                </VerticalStackLayout>
-
-            </Border>
-
-            <!--  Sürüşler  -->
-            <Border
+            <Button
                 Grid.Column="1"
                 BackgroundColor="Transparent"
-                StrokeThickness="0">
+                Clicked="PhotoClicked"
+                FontSize="11"
+                Text="Fotoğraf Ekle"
+                TextColor="White" />
 
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="TripsTapped" />
-                </Border.GestureRecognizers>
-
-                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
-
-                    <Label
-                        FontSize="22"
-                        HorizontalOptions="Center"
-                        Text="🛣️"
-                        TextColor="{StaticResource NeonBlue}" />
-
-                    <Label
-                        FontSize="11"
-                        HorizontalOptions="Center"
-                        Text="Trips"
-                        TextColor="White" />
-
-                </VerticalStackLayout>
-
-            </Border>
-
-            <!--  İstatistik  -->
-            <Border
+            <Button
                 Grid.Column="2"
-                BackgroundColor="Transparent"
-                StrokeThickness="0">
+                BackgroundColor="{StaticResource Alert}"
+                Command="{Binding ToggleRecordingCommand}"
+                CornerRadius="32"
+                FontAttributes="Bold"
+                FontSize="12"
+                HeightRequest="64"
+                Text="{Binding RecordButtonText}"
+                TextColor="White"
+                WidthRequest="64" />
 
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="StatisticsTapped" />
-                </Border.GestureRecognizers>
-
-                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
-
-                    <Label
-                        FontSize="22"
-                        HorizontalOptions="Center"
-                        Text="📊"
-                        TextColor="{StaticResource NeonBlue}" />
-
-                    <Label
-                        FontSize="11"
-                        HorizontalOptions="Center"
-                        Text="Statistics"
-                        TextColor="White" />
-
-                </VerticalStackLayout>
-
-            </Border>
-
-            <!--  Ayarlar  -->
-            <Border
+            <Button
                 Grid.Column="3"
                 BackgroundColor="Transparent"
-                StrokeThickness="0">
+                Clicked="AlertClicked"
+                FontSize="11"
+                Text="Sesli Uyarı"
+                TextColor="White" />
 
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="SettingsTapped" />
-                </Border.GestureRecognizers>
-
-                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
-
-                    <Label
-                        FontSize="22"
-                        HorizontalOptions="Center"
-                        Text="⚙️"
-                        TextColor="{StaticResource NeonBlue}" />
-
-                    <Label
-                        FontSize="11"
-                        HorizontalOptions="Center"
-                        Text="Settings"
-                        TextColor="White" />
-
-                </VerticalStackLayout>
-
-            </Border>
+            <Button
+                Grid.Column="4"
+                BackgroundColor="Transparent"
+                Clicked="SettingsClicked"
+                FontSize="11"
+                Text="Ayarlar"
+                TextColor="White" />
 
         </Grid>
 

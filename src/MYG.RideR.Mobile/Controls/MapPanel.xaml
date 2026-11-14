@@ -55,21 +55,35 @@
 
             <!--  Sağ Alt Konum  -->
 
-            <Border
+            <VerticalStackLayout
                 Margin="12"
-                Padding="12,8"
-                BackgroundColor="{StaticResource PanelOverlay}"
                 HorizontalOptions="End"
-                StrokeShape="RoundRectangle 14"
-                StrokeThickness="0"
+                Spacing="8"
                 VerticalOptions="End">
 
-                <Label
-                    FontSize="12"
-                    Text="Konum Bekleniyor..."
-                    TextColor="{StaticResource TextSecondaryAlt}" />
+                <Button
+                    BackgroundColor="{StaticResource PanelOverlay}"
+                    Clicked="LocateClicked"
+                    CornerRadius="22"
+                    FontSize="18"
+                    HeightRequest="44"
+                    Padding="0"
+                    Text="◎"
+                    TextColor="{StaticResource NeonBlue}"
+                    WidthRequest="44" />
 
-            </Border>
+                <Button
+                    BackgroundColor="{StaticResource PanelOverlay}"
+                    Clicked="LayersClicked"
+                    CornerRadius="22"
+                    FontSize="18"
+                    HeightRequest="44"
+                    Padding="0"
+                    Text="⧉"
+                    TextColor="{StaticResource NeonBlue}"
+                    WidthRequest="44" />
+
+            </VerticalStackLayout>
 
         </Grid>
 
