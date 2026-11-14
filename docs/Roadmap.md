@@ -36,3 +36,8 @@
 ## Phase 5: Production Readiness
 
 - Add telemetry, diagnostics, crash reporting, release signing, CI, and store deployment workflows.
+
+## Phase 2 Notes: Android background execution
+
+- Current implementation (`MauiLocationService`) is foreground-only (`LocationWhenInUse`); tracking stops when the app is backgrounded.
+- For recording with the screen off, a later step adds an Android foreground service (type `location`), `ACCESS_BACKGROUND_LOCATION`, `FOREGROUND_SERVICE_LOCATION` and a persistent notification. It must stay behind `ILocationService`.

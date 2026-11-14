@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+using MYG.RideR.Application.Abstractions;
 using MYG.RideR.Application.DependencyInjection;
 using MYG.RideR.Infrastructure.DependencyInjection;
 using MYG.RideR.Mobile.Interfaces;
@@ -36,7 +37,8 @@ public static class MauiProgram
             .AddTransient<TripsPage>()
             .AddTransient<StatisticsPage>()
             .AddTransient<SettingsPage>()
-            .AddSingleton<IClockService, ClockService>();
+            .AddSingleton<IClockService, ClockService>()
+            .AddSingleton<ILocationService, MauiLocationService>();
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
