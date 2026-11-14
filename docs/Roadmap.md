@@ -31,6 +31,7 @@
 - Implement map display.
 - Implement ride recording workflows.
 - Add trip history and statistics.
+- Map: Mapsui + OpenStreetMap (free, no API key; OSM tile usage policy must be followed).
 
 ## Phase 5: Production Readiness
 

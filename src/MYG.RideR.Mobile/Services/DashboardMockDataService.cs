@@ -9,7 +9,6 @@ public sealed class DashboardMockDataService : IDashboardDataService
     {
         var snapshot = new DashboardSnapshot(
             SpeedKmh: 72,
-            Clock: DateTime.Now.ToString("HH:mm"),
             GpsStatus: "Mock Ready",
             TripTime: "00:42",
             DistanceKm: 18.6,

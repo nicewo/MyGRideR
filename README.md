@@ -1,6 +1,6 @@
 # MYG RideR
 
-[![.NET MAUI](https://img.shields.io/badge/.NET%20MAUI-9.0-512BD4?logo=dotnet&logoColor=white)](https://learn.microsoft.com/dotnet/maui/)  
+[![.NET MAUI](https://img.shields.io/badge/.NET%20MAUI-10.0-512BD4?logo=dotnet&logoColor=white)](https://learn.microsoft.com/dotnet/maui/)  
 [![C#](https://img.shields.io/badge/C%23-MVVM-239120?logo=csharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)  
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20Windows-blue)](#)
 
@@ -19,12 +19,13 @@
 
 ## Technology
 
-- C# / .NET 9
-- .NET MAUI (MauiVersion 9.0.120)
+- C# / .NET 10
+- .NET MAUI (MauiVersion 10.0)
 - CommunityToolkit.Maui
 - CommunityToolkit.Mvvm
 - Dependency Injection
 - Clean Architecture and MVVM
+- Map: Mapsui + OpenStreetMap (free, no API key; OSM tile usage policy must be followed)
 
 ## Solution structure
 
@@ -44,7 +45,7 @@ docs/
 
 ## Requirements
 
-- .NET 9 SDK
+- .NET 10 SDK
 - .NET MAUI workload
 - Android SDK/emulator or a configured Android device for Android development
 - On Windows, the appropriate Windows SDK for Windows-targeted builds
@@ -62,7 +63,7 @@ dotnet build MYG.RideR.sln --no-restore
 To build specifically for Android:
 
 ```powershell
-dotnet build src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj -f net9.0-android
+dotnet build src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj -f net10.0-android
 ```
 
 Platform builds may require platform-specific workloads, SDKs, signing configuration, and—in the case of iOS/macOS—Apple development tooling.

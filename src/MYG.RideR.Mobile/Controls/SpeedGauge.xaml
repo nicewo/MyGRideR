@@ -9,9 +9,9 @@
 
         <!--  Dış halka  -->
         <Border
-            BackgroundColor="#0A0F16"
+            BackgroundColor="{StaticResource GaugeFace}"
             HeightRequest="420"
-            Stroke="#2A2F38"
+            Stroke="{StaticResource GaugeRing}"
             StrokeShape="RoundRectangle 210"
             StrokeThickness="2"
             WidthRequest="420" />
@@ -19,8 +19,8 @@
         <!--  İç halka  -->
         <Border
             Margin="20"
-            BackgroundColor="#05080C"
-            Stroke="#10151C"
+            BackgroundColor="{StaticResource GaugeInner}"
+            Stroke="{StaticResource GaugeInnerStroke}"
             StrokeShape="RoundRectangle 190"
             StrokeThickness="2" />
 
@@ -30,7 +30,7 @@
             HeightRequest="280"
             HorizontalOptions="Start"
             WidthRequest="8"
-            Color="#00B7FF" />
+            Color="{StaticResource NeonBlue}" />
 
         <!--  Sağ kırmızı yay  -->
         <BoxView
@@ -38,7 +38,7 @@
             HeightRequest="280"
             HorizontalOptions="End"
             WidthRequest="8"
-            Color="#FF3B30" />
+            Color="{StaticResource Alert}" />
 
         <!--  Hız  -->
         <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
@@ -54,7 +54,7 @@
                 FontSize="28"
                 HorizontalOptions="Center"
                 Text="km/h"
-                TextColor="#8A8A8A" />
+                TextColor="{StaticResource GaugeUnitText}" />
 
         </VerticalStackLayout>
 

@@ -8,8 +8,8 @@
 
     <Border
         Padding="14"
-        BackgroundColor="#11161E"
-        Stroke="#1E2732"
+        BackgroundColor="{StaticResource PanelBackground}"
+        Stroke="{StaticResource PanelStroke}"
         StrokeShape="RoundRectangle 18"
         StrokeThickness="1">
 
@@ -25,7 +25,7 @@
                 FontSize="11"
                 HorizontalOptions="Center"
                 Text="{Binding Title, Source={x:Reference Root}}"
-                TextColor="#7E8B99" />
+                TextColor="{StaticResource TextLabel}" />
 
             <!--  Değer  -->
 
@@ -42,7 +42,7 @@
                 FontSize="11"
                 HorizontalOptions="Center"
                 Text="{Binding Unit, Source={x:Reference Root}}"
-                TextColor="#00BFFF" />
+                TextColor="{StaticResource NeonBlue}" />
 
         </VerticalStackLayout>
 

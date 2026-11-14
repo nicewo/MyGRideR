@@ -4,7 +4,7 @@ namespace MYG.RideR.Mobile.Services;
 
 public class ClockService : IClockService
 {
-    private IDispatcherTimer? _timer;
+    private Timer? _timer;
 
     public event Action<DateTime>? TimeChanged;
 
@@ -13,20 +13,16 @@ public class ClockService : IClockService
         if (_timer != null)
             return;
 
-        _timer = Microsoft.Maui.Controls.Application.Current!.Dispatcher.CreateTimer();
-        _timer.Interval = TimeSpan.FromSeconds(1);
-
-        _timer.Tick += (s, e) =>
-        {
-            TimeChanged?.Invoke(DateTime.Now);
-        };
-
-        _timer.Start();
+        _timer = new Timer(
+            _ => TimeChanged?.Invoke(DateTime.Now),
+            null,
+            TimeSpan.Zero,
+            TimeSpan.FromSeconds(1));
     }
 
     public void Stop()
     {
-        _timer?.Stop();
+        _timer?.Dispose();
         _timer = null;
     }
 }

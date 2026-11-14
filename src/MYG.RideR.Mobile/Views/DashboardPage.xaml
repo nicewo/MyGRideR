@@ -7,7 +7,7 @@
     xmlns:controls="clr-namespace:MYG.RideR.Mobile.Controls"
     xmlns:viewModels="clr-namespace:MYG.RideR.Mobile.ViewModels"
     x:DataType="viewModels:DashboardViewModel"
-    BackgroundColor="#05070B"
+    BackgroundColor="{StaticResource PageBackground}"
     Shell.NavBarIsVisible="False">
 
     <Grid>

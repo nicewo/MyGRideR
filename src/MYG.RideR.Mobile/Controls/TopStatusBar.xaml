@@ -8,8 +8,8 @@
     <Border
         Margin="16,12,16,0"
         Padding="16,10"
-        BackgroundColor="#11161E"
-        Stroke="#1F2935"
+        BackgroundColor="{StaticResource PanelBackground}"
+        Stroke="{StaticResource PanelStroke}"
         StrokeShape="RoundRectangle 20"
         StrokeThickness="1">
 
@@ -21,7 +21,7 @@
             <!--  Menü  -->
 
             <Border
-                BackgroundColor="#1B2430"
+                BackgroundColor="{StaticResource StatusChip}"
                 HeightRequest="42"
                 StrokeShape="RoundRectangle 12"
                 StrokeThickness="0"
@@ -44,7 +44,7 @@
                 VerticalOptions="Center">
 
                 <Ellipse
-                    Fill="#00D26A"
+                    Fill="{StaticResource Success}"
                     HeightRequest="10"
                     WidthRequest="10" />
 
@@ -56,7 +56,7 @@
                 <Label
                     FontSize="13"
                     Text="±3 m"
-                    TextColor="#8FA6C2" />
+                    TextColor="{StaticResource StatusText}" />
 
             </HorizontalStackLayout>
 
@@ -74,7 +74,7 @@
 
             <Border
                 Grid.Column="3"
-                BackgroundColor="#2A3240"
+                BackgroundColor="{StaticResource StatusChipAlt}"
                 HeightRequest="42"
                 StrokeShape="RoundRectangle 21"
                 StrokeThickness="0"
@@ -85,7 +85,7 @@
                     FontSize="18"
                     HorizontalOptions="Center"
                     Text="M"
-                    TextColor="#00BFFF"
+                    TextColor="{StaticResource NeonBlue}"
                     VerticalOptions="Center" />
 
             </Border>

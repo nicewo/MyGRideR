@@ -8,8 +8,8 @@
     <Border
         Margin="16,0,16,16"
         Padding="12"
-        BackgroundColor="#11161E"
-        Stroke="#1E2732"
+        BackgroundColor="{StaticResource PanelBackground}"
+        Stroke="{StaticResource PanelStroke}"
         StrokeShape="RoundRectangle 24"
         StrokeThickness="1">
 
@@ -31,7 +31,7 @@
                         FontSize="22"
                         HorizontalOptions="Center"
                         Text="🏠"
-                        TextColor="#00BFFF" />
+                        TextColor="{StaticResource NeonBlue}" />
 
                     <Label
                         FontSize="11"
@@ -59,7 +59,7 @@
                         FontSize="22"
                         HorizontalOptions="Center"
                         Text="🛣️"
-                        TextColor="#00BFFF" />
+                        TextColor="{StaticResource NeonBlue}" />
 
                     <Label
                         FontSize="11"
@@ -87,7 +87,7 @@
                         FontSize="22"
                         HorizontalOptions="Center"
                         Text="📊"
-                        TextColor="#00BFFF" />
+                        TextColor="{StaticResource NeonBlue}" />
 
                     <Label
                         FontSize="11"
@@ -115,7 +115,7 @@
                         FontSize="22"
                         HorizontalOptions="Center"
                         Text="⚙️"
-                        TextColor="#00BFFF" />
+                        TextColor="{StaticResource NeonBlue}" />
 
                     <Label
                         FontSize="11"
