@@ -75,6 +75,15 @@
 
         <controls:MapPanel Grid.Row="3" Margin="18,12,18,12" />
 
+        <Button
+            Grid.Row="3"
+            Margin="0,0,0,24"
+            Padding="32,0"
+            HorizontalOptions="Center"
+            VerticalOptions="End"
+            Command="{Binding ToggleRecordingCommand}"
+            Text="{Binding RecordButtonText}" />
+
         <!--  Alt Menü  -->
 
         <controls:BottomToolbar Grid.Row="4" />

@@ -1,13 +1,16 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MYG.RideR.Application.Abstractions;
+using MYG.RideR.Application.Trips;
 using MYG.RideR.Mobile.Interfaces;
 
 namespace MYG.RideR.Mobile.ViewModels;
 
 public partial class DashboardViewModel : ObservableObject
 {
-    private readonly IDashboardDataService _dashboardDataService;
+    private readonly ITripRecorder _tripRecorder;
     private readonly IClockService _clockService;
+    private readonly TimeProvider _timeProvider;
 
     [ObservableProperty]
     public partial int SpeedKmh { get; private set; }
@@ -16,7 +19,7 @@ public partial class DashboardViewModel : ObservableObject
     public partial string Clock { get; private set; } = DateTime.Now.ToString("HH:mm:ss");
 
     [ObservableProperty]
-    public partial string GpsStatus { get; private set; } = "Unavailable";
+    public partial string GpsStatus { get; private set; } = "GPS hazır değil";
 
     [ObservableProperty]
     public partial string TripTime { get; private set; } = "00:00";
@@ -31,14 +34,22 @@ public partial class DashboardViewModel : ObservableObject
     public partial int MaximumSpeedKmh { get; private set; }
 
     [ObservableProperty]
+    public partial bool IsRecording { get; private set; }
+
+    [ObservableProperty]
+    public partial string RecordButtonText { get; private set; } = "BAŞLA";
+
+    [ObservableProperty]
     public partial bool IsBusy { get; private set; }
 
     public DashboardViewModel(
-        IDashboardDataService dashboardDataService,
-        IClockService clockService)
+        ITripRecorder tripRecorder,
+        IClockService clockService,
+        TimeProvider timeProvider)
     {
-        _dashboardDataService = dashboardDataService;
+        _tripRecorder = tripRecorder;
         _clockService = clockService;
+        _timeProvider = timeProvider;
     }
 
     public void StartClock()
@@ -59,11 +70,19 @@ public partial class DashboardViewModel : ObservableObject
         MainThread.BeginInvokeOnMainThread(() =>
         {
             Clock = now.ToString("HH:mm:ss");
+            Refresh();
         });
     }
 
     [RelayCommand]
-    public async Task InitializeAsync(CancellationToken cancellationToken = default)
+    public Task InitializeAsync()
+    {
+        Refresh();
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    public async Task ToggleRecordingAsync()
     {
         if (IsBusy)
         {
@@ -73,18 +92,48 @@ public partial class DashboardViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            var snapshot = await _dashboardDataService.GetSnapshotAsync(cancellationToken);
-
-            SpeedKmh = snapshot.SpeedKmh;
-            GpsStatus = snapshot.GpsStatus;
-            TripTime = snapshot.TripTime;
-            DistanceKm = snapshot.DistanceKm;
-            AverageSpeedKmh = snapshot.AverageSpeedKmh;
-            MaximumSpeedKmh = snapshot.MaximumSpeedKmh;
+            if (_tripRecorder.CurrentTrip is null)
+            {
+                await _tripRecorder.StartAsync();
+            }
+            else
+            {
+                await _tripRecorder.StopAsync();
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            GpsStatus = ex.Message;
         }
         finally
         {
             IsBusy = false;
+            Refresh();
         }
+    }
+
+    private void Refresh()
+    {
+        var trip = _tripRecorder.CurrentTrip;
+        IsRecording = trip is not null;
+        RecordButtonText = IsRecording ? "DURDUR" : "BAŞLA";
+
+        if (trip is null)
+        {
+            if (GpsStatus == "Kayıt açık")
+            {
+                GpsStatus = "GPS hazır değil";
+            }
+
+            return;
+        }
+
+        var summary = TripSummary.From(trip, _timeProvider.GetUtcNow());
+        GpsStatus = "Kayıt açık";
+        SpeedKmh = (int)Math.Round(summary.CurrentSpeedKmh);
+        DistanceKm = Math.Round(summary.DistanceKm, 2);
+        AverageSpeedKmh = (int)Math.Round(summary.AverageSpeedKmh);
+        MaximumSpeedKmh = (int)Math.Round(summary.MaximumSpeedKmh);
+        TripTime = summary.Duration.ToString(summary.Duration.TotalHours >= 1 ? @"hh\:mm\:ss" : @"mm\:ss");
     }
 }

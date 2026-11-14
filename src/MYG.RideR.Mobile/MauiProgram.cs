@@ -27,7 +27,6 @@ public static class MauiProgram
         builder.Services
             .AddApplicationServices()
             .AddInfrastructureServices(Path.Combine(FileSystem.AppDataDirectory, "myg-rider.db"))
-            .AddSingleton<IDashboardDataService, DashboardMockDataService>()
             .AddSingleton<AppShell>()
             .AddTransient<DashboardViewModel>()
             .AddTransient<TripsViewModel>()

@@ -9,4 +9,17 @@ public partial class StatisticsPage : ContentPage
         InitializeComponent();
         BindingContext = viewModel;
     }
+    
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        try
+        {
+            await ((StatisticsViewModel)BindingContext).LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+        }
+    }
 }

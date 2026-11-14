@@ -9,4 +9,17 @@ public partial class TripsPage : ContentPage
         InitializeComponent();
         BindingContext = viewModel;
     }
+    
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        try
+        {
+            await ((TripsViewModel)BindingContext).LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+        }
+    }
 }
