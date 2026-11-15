@@ -41,12 +41,32 @@ public sealed class TripRecorderFeedTests
     private sealed class FakeRepository : ITripRepository
     {
         public List<Trip> Saved { get; } = [];
+        public List<Guid> Completed { get; } = [];
+        public List<LocationSample> Appended { get; } = [];
 
         public Task SaveAsync(Trip trip, CancellationToken cancellationToken = default)
         {
             Saved.Add(trip);
             return Task.CompletedTask;
         }
+
+        public Task CreateAsync(Guid id, DateTimeOffset startedAt, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task AppendSamplesAsync(Guid tripId, int firstSeq, IReadOnlyList<LocationSample> samples, CancellationToken cancellationToken = default)
+        {
+            Appended.AddRange(samples);
+            return Task.CompletedTask;
+        }
+
+        public Task CompleteAsync(Guid tripId, DateTimeOffset endedAt, CancellationToken cancellationToken = default)
+        {
+            Completed.Add(tripId);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<Trip>> ListUnfinishedAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Trip>>([]);
 
         public Task<Trip?> GetAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult(Saved.FirstOrDefault(t => t.Id == id));
@@ -112,8 +132,8 @@ public sealed class TripRecorderFeedTests
         feed.Emit(new LocationSample(41.1, 29.1, T0.AddSeconds(1)));
 
         Assert.Single(stopped.Route.Samples);
-        Assert.Same(stopped, Assert.Single(repo.Saved));
-        Assert.Single(repo.Saved[0].Route.Samples);
+        Assert.Equal(stopped.Id, Assert.Single(repo.Completed));
+        Assert.Single(repo.Appended);
     }
 
     [Fact]
@@ -126,9 +146,8 @@ public sealed class TripRecorderFeedTests
 
         await recorder.StopAsync();
 
-        var saved = Assert.Single(repo.Saved);
-        Assert.Equal(2, saved.Route.Samples.Count);
-        Assert.True(saved.DistanceKm > 1);
+        Assert.Equal(2, repo.Appended.Count);
+        Assert.Single(repo.Completed);
     }
 
     [Fact]
@@ -141,7 +160,7 @@ public sealed class TripRecorderFeedTests
         feed.Emit(new LocationSample(41.0, 29.0, T0));
 
         Assert.Null(recorder.CurrentTrip);
-        Assert.Empty(repo.Saved);
+        Assert.Empty(repo.Completed);
     }
 
     [Fact]
@@ -154,6 +173,6 @@ public sealed class TripRecorderFeedTests
         feed.Emit(new LocationSample(41.0, 29.0, T0));
 
         Assert.Null(recorder.CurrentTrip);
-        Assert.Empty(repo.Saved);
+        Assert.Empty(repo.Completed);
     }
 }

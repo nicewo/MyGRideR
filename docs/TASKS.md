@@ -16,7 +16,7 @@ Durum: `bekliyor` / `sürüyor` / `bitti`. Görev bitip build+test geçince sorm
 | 6 | GPS örnek filtresi: mesafe jitter + max hız sıçraması | bitti | kod-yazici + test-yazici | 103 test geçti, build 0 hata |
 | 7 | Thread-safe özet: UI, rota listesini kilitsiz okumasın | bitti | kod-yazici + test-yazici | 105 test geçti, build 0 hata |
 | 8 | iOS / MacCatalyst konum izni metni (Info.plist) | bitti | basit-duzeltici | 105 test geçti, build 0 hata |
-| 9 | Ara kayıt + çökme kurtarma (sürüş sırasında periyodik yazma, açılışta yarım kalanı kapatma) | bekliyor | kod-yazici + test-yazici | - |
+| 9 | Ara kayıt + çökme kurtarma (sürüş sırasında periyodik yazma, açılışta yarım kalanı kapatma) | bitti | kod-yazici + test-yazici | 114 test geçti, build 0 hata |
 | 10 | Liste performansı: Trips tablosunda özet sütunlar, listeler örnek yüklemesin, SaveAsync hazır komut | bekliyor | kod-yazici + test-yazici | - |
 
 ## Görev detayları

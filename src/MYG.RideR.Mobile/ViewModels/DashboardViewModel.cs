@@ -17,6 +17,7 @@ public partial class DashboardViewModel : ObservableObject
     private bool _liveAcquired;
     private double? _lastCourse;
     private readonly SemaphoreSlim _liveGate = new(1, 1);
+    private bool _recovered;
     private string? _recordingError;
     private DateTimeOffset _recordingErrorUntil;
 
@@ -120,10 +121,23 @@ public partial class DashboardViewModel : ObservableObject
         d.ToString("d MMMM yyyy dddd", new System.Globalization.CultureInfo("tr-TR"));
 
     [RelayCommand]
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
         Refresh();
-        return Task.CompletedTask;
+
+        if (_recovered)
+            return;
+        _recovered = true;
+
+        try
+        {
+            if (await _tripRecorder.RecoverUnfinishedAsync() > 0)
+                ShowRecordingError("Yarım kalan sürüş kaydedildi");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+        }
     }
 
     [RelayCommand]

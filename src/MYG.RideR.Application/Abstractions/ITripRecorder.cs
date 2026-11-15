@@ -13,4 +13,7 @@ public interface ITripRecorder
     Task<Trip> StartAsync(CancellationToken cancellationToken = default);
 
     Task<Trip> StopAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Closes trips left open by a crash; returns how many were closed.</summary>
+    Task<int> RecoverUnfinishedAsync(CancellationToken cancellationToken = default);
 }

@@ -118,6 +118,91 @@ public sealed class SqliteTripRepository : ITripRepository
         return trips;
     }
 
+    public async Task CreateAsync(Guid id, DateTimeOffset startedAt, CancellationToken cancellationToken = default)
+    {
+        await using var connection = await OpenAsync(cancellationToken);
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = "INSERT INTO Trips (Id, StartedAt, EndedAt) VALUES ($id, $start, NULL)";
+        cmd.Parameters.AddWithValue("$id", id.ToString());
+        cmd.Parameters.AddWithValue("$start", Format(startedAt));
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public async Task AppendSamplesAsync(
+        Guid tripId, int firstSeq, IReadOnlyList<LocationSample> samples, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(samples);
+        if (samples.Count == 0)
+            return;
+
+        await using var connection = await OpenAsync(cancellationToken);
+        await using var tx = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken);
+
+        await using var cmd = connection.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = """
+            INSERT INTO Samples (TripId, Seq, Latitude, Longitude, Timestamp, SpeedMps, AccuracyM, AltitudeM, CourseDeg)
+            VALUES ($id, $seq, $lat, $lon, $ts, $speed, $acc, $alt, $course)
+            """;
+        var pId = cmd.Parameters.Add("$id", SqliteType.Text);
+        var pSeq = cmd.Parameters.Add("$seq", SqliteType.Integer);
+        var pLat = cmd.Parameters.Add("$lat", SqliteType.Real);
+        var pLon = cmd.Parameters.Add("$lon", SqliteType.Real);
+        var pTs = cmd.Parameters.Add("$ts", SqliteType.Text);
+        var pSpeed = cmd.Parameters.Add("$speed", SqliteType.Real);
+        var pAcc = cmd.Parameters.Add("$acc", SqliteType.Real);
+        var pAlt = cmd.Parameters.Add("$alt", SqliteType.Real);
+        var pCourse = cmd.Parameters.Add("$course", SqliteType.Real);
+        cmd.Prepare();
+
+        pId.Value = tripId.ToString();
+        var seq = firstSeq;
+        foreach (var s in samples)
+        {
+            pSeq.Value = seq++;
+            pLat.Value = s.Latitude;
+            pLon.Value = s.Longitude;
+            pTs.Value = Format(s.Timestamp);
+            pSpeed.Value = s.SpeedMetersPerSecond is { } sp ? sp : DBNull.Value;
+            pAcc.Value = s.AccuracyMeters is { } a ? a : DBNull.Value;
+            pAlt.Value = s.AltitudeMeters is { } al ? al : DBNull.Value;
+            pCourse.Value = s.CourseDegrees is { } cd ? cd : DBNull.Value;
+            await cmd.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        await tx.CommitAsync(cancellationToken);
+    }
+
+    public async Task CompleteAsync(Guid tripId, DateTimeOffset endedAt, CancellationToken cancellationToken = default)
+    {
+        await using var connection = await OpenAsync(cancellationToken);
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = "UPDATE Trips SET EndedAt = $end WHERE Id = $id";
+        cmd.Parameters.AddWithValue("$id", tripId.ToString());
+        cmd.Parameters.AddWithValue("$end", Format(endedAt));
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Trip>> ListUnfinishedAsync(CancellationToken cancellationToken = default)
+    {
+        await using var connection = await OpenAsync(cancellationToken);
+        var headers = new List<(Guid Id, DateTimeOffset Start, DateTimeOffset? End)>();
+
+        await using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText = "SELECT Id, StartedAt, EndedAt FROM Trips WHERE EndedAt IS NULL ORDER BY StartedAt";
+            await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+                headers.Add(ReadHeader(reader));
+        }
+
+        var trips = new List<Trip>(headers.Count);
+        foreach (var (id, start, end) in headers)
+            trips.Add(Trip.Restore(id, start, end, await ReadSamplesAsync(connection, id, cancellationToken)));
+
+        return trips;
+    }
+
     private async Task<Trip> ReadTripAsync(SqliteConnection connection, SqliteDataReader reader, CancellationToken ct)
     {
         var (id, start, end) = ReadHeader(reader);
@@ -163,7 +248,7 @@ public sealed class SqliteTripRepository : ITripRepository
 
         await using (var pragma = connection.CreateCommand())
         {
-            pragma.CommandText = "PRAGMA foreign_keys = ON;";
+            pragma.CommandText = "PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;";
             await pragma.ExecuteNonQueryAsync(ct);
         }
 
