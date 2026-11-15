@@ -24,8 +24,9 @@ public partial class TopStatusBar : ContentView
                 BatteryLabel.Text = $"%{(int)Math.Round(level * 100)}";
             }
         }
-        catch (FeatureNotSupportedException)
+        catch (Exception ex) when (ex is FeatureNotSupportedException or PermissionException)
         {
+            // Battery level is optional; never block the dashboard over it.
         }
     }
 
