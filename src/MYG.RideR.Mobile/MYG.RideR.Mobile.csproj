@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
@@ -66,6 +66,14 @@
     <MauiAsset Include="Resources\Raw\**"
                LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
+  </ItemGroup>
+
+  <!-- Android: Infrastructure'ın doğrudan referans verdiği SQLitePCLRaw.lib.e_sqlite3 (masaüstü/linux .so'ları)
+       APK'ya giriyor ve Android'in libe_sqlite3.so'sunun üzerine yazıyordu (glibc'ye bağlı -> DllNotFoundException: e_sqlite3).
+       Android'de o paketin varlıkları hariç tutulur, yerine yamalı Android paketi kullanılır. -->
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.14" ExcludeAssets="all" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3.android" Version="2.1.14" />
   </ItemGroup>
 
   <ItemGroup>
