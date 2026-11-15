@@ -1,5 +1,3 @@
-using BruTile.Predefined;
-using BruTile.Web;
 using Mapsui;
 using Mapsui.Layers;
 using Mapsui.Projections;
@@ -29,13 +27,12 @@ public partial class MapPanel : ContentView
     {
         InitializeComponent();
 
-        // CARTO dark basemap. Attribution must stay visible (OSM + CARTO terms).
-        var tileSource = new HttpTileSource(
-            new GlobalSphericalMercator(),
-            "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-            name: "CARTO Dark",
-            attribution: new BruTile.Attribution("© OpenStreetMap contributors © CARTO"));
-        Map.Map.Layers.Add(new TileLayer(tileSource) { Name = "CARTO Dark" });
+        // CARTO now requires an API key ("API KEY REQUIRED" tiles). Use OSM (identifying User-Agent per its
+        // tile policy) and dim it over the dark map background so it fits the dark UI. Attribution stays visible.
+        var osm = Mapsui.Tiling.OpenStreetMap.CreateTileLayer("MYG-RideR/1.0");
+        osm.Opacity = 0.55;
+        Map.Map.BackColor = Color.FromArgb(255, 0x0D, 0x13, 0x1A); // MapBackground; shows through the dimmed tiles
+        Map.Map.Layers.Add(osm);
 
         _routeLayer = new MemoryLayer { Name = "Route", Style = null };
         _positionLayer = new MemoryLayer { Name = "Position", Style = null };
