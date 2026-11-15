@@ -3,21 +3,24 @@
 Opus planlar ve görevleri buraya yazar; ucuz ajanlar uygular; her görevden sonra build+test çalışır ve sonuç buraya işlenir.
 Durum: `bekliyor` / `sürüyor` / `bitti`. Görev bitip build+test geçince sormadan commit + push. Kilometre taşında `/cost`.
 
-**Uygulama sırası:** 5 → 6 → 7 → 8 → 9 → 10 → 1 (cihaz) → 2 → 3 → 4
+**Uygulama sırası:** 3 → 2 → 11 → 12 → 13 → 1 (cihaz, en sona ertelendi). 5–10 bitti.
 
 | # | Görev | Durum | Ajan | Doğrulama |
 |---|---|---|---|---|
 | 0 | Canlı konum akışı (ILiveLocationFeed, dashboard canlı alanlar, irtifa/yön persist) | bitti | kod-yazici + test-yazici | 93 test geçti, commit 789339e push edildi |
-| 1 | Cihazda doğrulama: ±m/GPS badge, kayıt başlat/durdur, sayfa değişince kayıt sürmesi, irtifa/yön/duruş süresi, kırmızı ışıkta mesafe artmaması (5 sonrası) | bekliyor | kullanıcı (cihaz) | - |
-| 2 | Android foreground service: ekran kapalıyken kayıt (type `location`, `ACCESS_BACKGROUND_LOCATION`, `FOREGROUND_SERVICE_LOCATION`, kalıcı bildirim; `ILocationService` arkasında) | bekliyor (Opus planı gerekli, 9 sonrası) | Opus plan -> kod-yazici -> test-yazici | - |
+| 1 | Cihazda doğrulama: ±m/GPS badge, kayıt başlat/durdur, sayfa değişince kayıt sürmesi, irtifa/yön/duruş süresi, kırmızı ışıkta mesafe artmaması (5 sonrası) | ertelendi (en son, kullanıcı) | kullanıcı (cihaz) | - |
+| 2 | Android: ekran kapalıyken kayıt (location foreground service + kalıcı bildirim, `IRecordingKeepAlive` arkasında) | bekliyor | kod-yazici + test-yazici | - |
 | 3 | Küçük bilinen sorunlar (liste aşağıda; cihaz doğrulamasında çıkanlar da buraya) | bekliyor | basit-duzeltici | - |
-| 4 | Faz 5: telemetri, diagnostik, crash reporting, release signing, CI | bekliyor | Opus plan -> kod-yazici | - |
+| 4 | Faz 5 → 11, 12, 13'e bölündü. Telemetri ve 3. parti crash servisi kapsam dışı (hesap/anahtar ve gizlilik kararı kullanıcının) | bölündü | - | - |
 | 5 | Durdurma hatasına dayanıklılık (TripRecorder.StopAsync idempotent + VM hata yakalama) | bitti | kod-yazici + test-yazici | 96 test geçti, build 0 hata (kod commit 01e1d0a'da zaten vardı; doğrulandı) |
 | 6 | GPS örnek filtresi: mesafe jitter + max hız sıçraması | bitti | kod-yazici + test-yazici | 103 test geçti, build 0 hata |
 | 7 | Thread-safe özet: UI, rota listesini kilitsiz okumasın | bitti | kod-yazici + test-yazici | 105 test geçti, build 0 hata |
 | 8 | iOS / MacCatalyst konum izni metni (Info.plist) | bitti | basit-duzeltici | 105 test geçti, build 0 hata |
 | 9 | Ara kayıt + çökme kurtarma (sürüş sırasında periyodik yazma, açılışta yarım kalanı kapatma) | bitti | kod-yazici + test-yazici | 114 test geçti, build 0 hata |
 | 10 | Liste performansı: Trips tablosunda özet sütunlar, listeler örnek yüklemesin, SaveAsync hazır komut | bitti | kod-yazici + test-yazici | build ok, 118 test geçti |
+| 11 | CI: GitHub Actions (birim testleri + Android build) | bekliyor | kod-yazici | - |
+| 12 | Yerel çökme kaydı + Ayarlar'da paylaş/temizle | bekliyor | kod-yazici + test-yazici | - |
+| 13 | Android release imzalama altyapısı (sır repoda yok) + docs/Release.md | bekliyor | basit-duzeltici | - |
 
 ## Görev detayları
 
@@ -97,6 +100,66 @@ Sorun: `ListAsync` her sürüşün tüm örneklerini yüklüyor (1 saat ≈ 3600
 - Örnek insert'leri (`SaveAsync` ve `AppendSamplesAsync`): döngü dışında tek komut + parametreler, `Prepare()`, döngüde sadece `Value` ata.
 - Testler: header'lar doğru özetleri döndürüyor; özet sütunu NULL eski satır backfill ediliyor; Aggregate(header) eski Aggregate(trip) ile aynı sonucu veriyor.
 
+### 2 — Android: ekran kapalıyken kayıt
+Karar: kayıt sürerken `location` tipinde bir **foreground service** çalışır; süreç ve konum dinleme ekran kapalı/uygulama arka plandayken canlı kalır. Servis kendisi konum okumaz; mevcut `MauiLocationService` dinlemeye devam eder. Servis uygulama öndeyken (BAŞLAT'a basınca) başlatıldığı için "uygulama kullanılırken" izni yeterlidir → **`ACCESS_BACKGROUND_LOCATION` istenmez** (Play politikası yükü yok). Sadece kayıt sürerken çalışır; dashboard canlı akışı için çalışmaz. iOS/Windows/MacCatalyst: no-op (iOS arka plan konumu ayrı iş, kapsam dışı).
+- Yeni `src/MYG.RideR.Application/Abstractions/IRecordingKeepAlive.cs`:
+  `public interface IRecordingKeepAlive { Task StartAsync(CancellationToken ct = default); Task StopAsync(CancellationToken ct = default); }`
+- `TripRecorder` (ctor'a `IRecordingKeepAlive keepAlive` ekle):
+  - `StartAsync`: `CreateAsync` başarılı olduktan sonra `await _keepAlive.StartAsync()`. Hata atarsa **kayıt devam eder**: yut + `Debug.WriteLine`. `private bool _keepAliveOn` tut.
+  - `StopAsync`: feed release'ten hemen sonra, `_keepAliveOn` ise `StopAsync` (hata yut + logla), `_keepAliveOn = false`. Kaydetme hatası olsa bile keep-alive kapanmış olur (sürüş zaten bitti).
+  - `StartAsync` içindeki her hata dalında (acquire/create hatası) keep-alive başlatılmamış olduğundan ek iş yok.
+- Yeni `src/MYG.RideR.Mobile/Services/NoOpRecordingKeepAlive.cs`: iki metot `Task.CompletedTask`.
+- Yeni `src/MYG.RideR.Mobile/Platforms/Android/Services/RecordingForegroundService.cs`:
+  - `[Service(Exported = false, ForegroundServiceType = Android.Content.PM.ForegroundService.TypeLocation)]`, `Android.App.Service`'ten türer, `OnBind` → null.
+  - `OnStartCommand`: bildirim kanalı oluştur (id `"ride_recording"`, ad `"Sürüş kaydı"`, `NotificationImportance.Low`). Bildirim: başlık `"MYG RideR"`, metin `"Sürüş kaydediliyor"`, `SetOngoing(true)`, küçük ikon `Resource.Mipmap.appicon` (derlenmezse `Android.Resource.Drawable.IcMenuMyLocation`), dokununca `MainActivity`'yi açan `PendingIntent` (`PendingIntentFlags.Immutable | UpdateCurrent`, intent flag `SingleTop`). `AndroidX.Core.App.ServiceCompat.StartForeground(this, 1001, notification, (int)Android.Content.PM.ForegroundService.TypeLocation)`. Dönüş `StartCommandResult.NotSticky`.
+  - `OnDestroy`: `StopForeground(StopForegroundFlags.Remove)`.
+- Yeni `src/MYG.RideR.Mobile/Platforms/Android/Services/AndroidRecordingKeepAlive.cs` (`IRecordingKeepAlive`):
+  - `StartAsync`: API 33+ ise `Permissions.RequestAsync<Permissions.PostNotifications>()` (red edilse de devam et; servis yine çalışır, sadece bildirim görünmez). Sonra `MainThread.InvokeOnMainThreadAsync` içinde `AndroidX.Core.Content.ContextCompat.StartForegroundService(Platform.AppContext, new Intent(Platform.AppContext, typeof(RecordingForegroundService)))`.
+  - `StopAsync`: `Platform.AppContext.StopService(new Intent(..., typeof(RecordingForegroundService)))`.
+- `MauiProgram.cs`: `#if ANDROID` → `AddSingleton<IRecordingKeepAlive, AndroidRecordingKeepAlive>()`, `#else` → `NoOpRecordingKeepAlive`.
+- `Platforms/Android/AndroidManifest.xml` izinler: `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`, `POST_NOTIFICATIONS`. (`ACCESS_BACKGROUND_LOCATION` **ekleme**.)
+- `docs/Roadmap.md` "Phase 2 Notes": arka plan için ACCESS_BACKGROUND_LOCATION gerekmediği, foreground service + while-in-use kararı ve iOS'un kapsam dışı olduğu yazılır.
+- Testler (`TripRecorderTests`, sahte keep-alive sayaçlı): Start sonrası keep-alive Start 1 kez; Stop sonrası Stop 1 kez; keep-alive Start hata atınca kayıt yine başlar; acquire veya create hatasında keep-alive Start hiç çağrılmaz; kaydetme hatalı Stop'ta keep-alive yine kapanır ve ikinci Stop'ta tekrar Stop çağrılmaz.
+- Risk (cihaz testinde bakılacak, bu görevde kod yok): MAUI `StartListeningForegroundAsync` arka planda güncelleme kesiyorsa ileride servis içinde FusedLocation'a geçilir.
+
+### 11 — CI: GitHub Actions
+- Yeni `.github/workflows/ci.yml`, tetikleyici `push` (main) ve `pull_request`:
+  - Job `test` (`ubuntu-latest`): `actions/checkout@v4`; `actions/setup-dotnet@v4` with `global-json-file: global.json`; `dotnet test tests/MYG.RideR.UnitTests --nologo -v q`.
+  - Job `android` (`windows-latest`, `needs: test`): checkout; setup-dotnet (global.json); `dotnet workload restore src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj`; `dotnet build src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj -f net10.0-android -c Release --nologo -v q`. İmzalama yok.
+- `README.md` başına CI rozeti: `![CI](https://github.com/nicewo/MyGRideR/actions/workflows/ci.yml/badge.svg)`.
+- Doğrulama: yerel build+test (workflow'u yerelde koşturmak gerekmez). Push sonrası Actions sonucu kullanıcı tarafından kontrol edilir; TASKS.md doğrulama sütununa "yerel OK, Actions sonucu kontrol edilecek" yaz.
+
+### 12 — Yerel çökme kaydı
+Karar: 3. parti servis yok; çökmeler cihazda dosyaya yazılır, kullanıcı Ayarlar'dan paylaşır.
+- Yeni `src/MYG.RideR.Mobile/Interfaces/ICrashLog.cs`: `void Install(); Task<string?> ReadAsync(); Task ClearAsync(); string FilePath { get; }`.
+- Yeni `src/MYG.RideR.Mobile/Services/CrashLogService.cs`:
+  - Dosya `Path.Combine(FileSystem.AppDataDirectory, "crash.log")`.
+  - `Install` (bir kez, ikinci çağrı no-op): `AppDomain.CurrentDomain.UnhandledException` ve `TaskScheduler.UnobservedTaskException` (bunda `SetObserved()` çağırma) yakala. `#if ANDROID` ek olarak `Android.Runtime.AndroidEnvironment.UnhandledExceptionRaiser`.
+  - Kayıt formatı: `=== {UTC ISO zaman} | {AppInfo.VersionString} | {DeviceInfo.Platform} {DeviceInfo.VersionString} ===` + `exception.ToString()` + boş satır. Senkron `File.AppendAllText` (çökme anında async güvenilmez), her şey try/catch içinde (log yazımı asla ikinci istisna atmasın).
+  - Dosya 256 KB'ı geçerse yazmadan önce son 128 KB'ı tutup üstüne yaz.
+  - `ReadAsync`: dosya yoksa null. `ClearAsync`: dosyayı sil.
+- `MauiProgram`: `AddSingleton<ICrashLog, CrashLogService>()`; `builder.Build()` sonrası `app.Services.GetRequiredService<ICrashLog>().Install()` çağırıp `app`'i döndür.
+- `SettingsViewModel` (`partial`, ctor `ICrashLog`): `[ObservableProperty] string CrashLogStatus` ("Hata kaydı yok" / "Hata kaydı var (N KB)"); `LoadAsync`; `ShareCrashLogCommand` → dosya varsa `Share.Default.RequestAsync(new ShareFileRequest("MYG RideR hata kaydı", new ShareFile(FilePath)))`; `ClearCrashLogCommand` → temizle + status yenile.
+- `SettingsPage.xaml(.cs)`: BindingContext DI'dan gelen `SettingsViewModel`; `OnAppearing` → `LoadAsync`. Mevcut karta durum label'ı + "Paylaş" ve "Temizle" butonları (mevcut tema stilleri, yeni renk yok). Başlıklar Türkçe: sayfa "Ayarlar".
+- Testler: `CrashLogService` platform API'sine bağlı olduğundan birim testi yok; `SettingsViewModel` durum metni mantığını ayrı statik yardımcıya (`CrashLogStatusText.From(long? bytes)`) çıkar ve onu test et (null → "Hata kaydı yok", 2048 → "Hata kaydı var (2 KB)"). Yardımcı `src/MYG.RideR.Application/Diagnostics/CrashLogStatusText.cs` içinde (test projesi Mobile'a referans vermiyor).
+
+### 13 — Android release imzalama altyapısı
+Karar: anahtar ve şifreler **asla** repoya girmez; ortam değişkenlerinden okunur. Değişken yoksa Release build imzasız devam eder (CI kırılmaz).
+- `MYG.RideR.Mobile.csproj` yeni PropertyGroup:
+  ```xml
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' and '$(MYG_KEYSTORE)' != ''">
+    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidSigningKeyStore>$(MYG_KEYSTORE)</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>$(MYG_KEY_ALIAS)</AndroidSigningKeyAlias>
+    <AndroidSigningStorePass>env:MYG_STORE_PASS</AndroidSigningStorePass>
+    <AndroidSigningKeyPass>env:MYG_KEY_PASS</AndroidSigningKeyPass>
+    <AndroidPackageFormat>aab</AndroidPackageFormat>
+  </PropertyGroup>
+  ```
+- `.gitignore`: `*.keystore`, `*.jks`, `*.aab`, `*.apk` ekle.
+- Yeni `docs/Release.md` (Türkçe, kısa): (1) `keytool -genkeypair -v -keystore myg-rider.keystore -alias myg-rider -keyalg RSA -keysize 2048 -validity 10000` — keystore'u repo dışında sakla, yedekle (kaybı = mağazada güncelleme yapamamak); (2) PowerShell'de `$env:MYG_KEYSTORE`, `$env:MYG_KEY_ALIAS`, `$env:MYG_STORE_PASS`, `$env:MYG_KEY_PASS` ayarla; (3) `dotnet publish src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj -f net10.0-android -c Release`; (4) çıktı `bin/Release/net10.0-android/publish/*.aab`; (5) sürüm artırma: `ApplicationDisplayVersion` ve `ApplicationVersion`.
+- Doğrulama: değişkenler tanımsızken normal build+test geçmeli.
+
 ### 3 — Küçük bilinen sorunlar
 - `DashboardViewModel`: `RecordButtonText` başlangıç değeri `"BAŞLA"` → `"BAŞLAT"`.
 - `DashboardViewModel.Refresh`: trip yokken `DistanceKm`, `AverageSpeedKmh`, `MaximumSpeedKmh`, `TripTime`, `StopTime` son sürüşün değerinde kalıyor — bilinçli karar: **kalsın** (son sürüş özeti olarak görünür), değişiklik yok.
@@ -107,6 +170,7 @@ Sorun: `ListAsync` her sürüşün tüm örneklerini yüklüyor (1 saat ≈ 3600
 - `MYG.RideR.Mobile.csproj`: `MauiIcon`/`MauiSplashScreen` `Color="#512BD4"` → tema arka plan rengi (`Themes/Colors.xaml` içindeki ana koyu renk).
 
 ## Notlar
+- #1 cihaz testi kullanıcı isteğiyle en sona ertelendi; 2/11/12/13 cihazda doğrulanmadan bitti sayılır, cihaz testinde çıkanlar #3'e eklenir.
 - Kapsam dışı (canlı akış işinden): grafikler, harita rota+marker, uydu sayısı, vites, yakıt, canlı pil.
 - Sonraki aday (henüz görev değil): "hareket halinde ortalama hız" (duruşlar hariç); `MapPanel` konumu `ILiveLocationFeed`'den alsın ve rota çizgisi göstersin.
 - Ajan görevleri kendi başına anlaşılır yazılır: dosya yolları, istenen sonuç, kapsam sınırı.
