@@ -9,13 +9,28 @@ namespace MYG.RideR.Mobile.ViewModels;
 public sealed partial class SettingsViewModel : ObservableObject
 {
     private readonly ICrashLog _crashLog;
+    private readonly IErrorReporter _errorReporter;
 
     [ObservableProperty]
     private string _crashLogStatus = CrashLogStatusText.From(null);
 
-    public SettingsViewModel(ICrashLog crashLog)
+    [ObservableProperty]
+    private string _reportEmail = string.Empty;
+
+    public SettingsViewModel(ICrashLog crashLog, IErrorReporter errorReporter)
     {
         _crashLog = crashLog;
+        _errorReporter = errorReporter;
+        _reportEmail = errorReporter.ReportEmail;
+    }
+
+    partial void OnReportEmailChanged(string value) => _errorReporter.ReportEmail = value;
+
+    [RelayCommand]
+    private async Task SendReportAsync()
+    {
+        if (!await _errorReporter.SendAsync())
+            CrashLogStatus = "Gönderilecek hata kaydı yok (ya da e-posta uygulaması bulunamadı)";
     }
 
     public string Title => "Ayarlar";
