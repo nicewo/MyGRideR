@@ -34,7 +34,10 @@ public sealed class ErrorReportService : IErrorReporter
         if (string.IsNullOrEmpty(log) || !Email.Default.IsComposeSupported)
             return false;
 
-        var tail = log.Length > BodyTailChars ? log[^BodyTailChars..] : log;
+        // Only what was logged since the last report, so old (already fixed) errors are not sent again.
+        var reported = Preferences.Default.Get(ReportedLengthKey, 0L);
+        var fresh = reported > 0 && reported < log.Length ? log[(int)reported..] : log;
+        var tail = fresh.Length > BodyTailChars ? fresh[^BodyTailChars..] : fresh;
         var body = new StringBuilder()
             .AppendLine($"Sürüm: {AppInfo.VersionString} (build {AppInfo.BuildString})")
             .AppendLine($"Cihaz: {DeviceInfo.Manufacturer} {DeviceInfo.Model}, {DeviceInfo.Platform} {DeviceInfo.VersionString}")
