@@ -78,6 +78,7 @@
                     Margin="0,8,0,0"
                     HeightRequest="340"
                     HorizontalOptions="Center"
+                    MaxValue="{Binding GaugeMaxKmh}"
                     SpeedKmh="{Binding SpeedKmh}"
                     WidthRequest="340" />
 

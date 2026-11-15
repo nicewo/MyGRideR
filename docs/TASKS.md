@@ -27,7 +27,7 @@ Durum: `bekliyor` / `sürüyor` / `bitti`. Görev bitip build+test geçince sorm
 | 15 | Üst durum çubuğu: GPS kalite + uydu + doğruluk tek satır, logo; hata mesajları toast'a | bitti | kod-yazici | build 0 hata, 142 test geçti; görsel kontrol cihazda (#1) |
 | 16 | Koyu harita + canlı konum işaretçisi + rota çizgisi + koordinat çipi | bitti | kod-yazici | build 0 hata (Android dahil), 146 test geçti; görsel kontrol cihazda (#1). Not: BruTile `HttpTileSource` imzasında `userAgent` parametresi yok, UA özel verilmedi (cihazda CARTO tile'ları yükleniyor mu kontrol et) |
 | 17 | Toplam kilometre sayacı (tüm sürüşler) | bitti | kod-yazici + test-yazici | build 0 hata, 152 test geçti |
-| 18 | Araç modu (yaya/bisiklet/motor/araba) → gösterge ölçeği | bekliyor | kod-yazici + test-yazici | - |
+| 18 | Araç modu (yaya/bisiklet/motor/araba) → gösterge ölçeği | bitti | kod-yazici + test-yazici | build ok, 157 test geçti |
 
 ## Görev detayları
 

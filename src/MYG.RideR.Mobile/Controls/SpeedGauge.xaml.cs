@@ -6,7 +6,23 @@ public partial class SpeedGauge : ContentView
         nameof(SpeedKmh), typeof(int), typeof(SpeedGauge), 0,
         propertyChanged: (b, _, n) => ((SpeedGauge)b).OnSpeedChanged((int)n));
 
+    public static readonly BindableProperty MaxValueProperty = BindableProperty.Create(
+        nameof(MaxValue), typeof(int), typeof(SpeedGauge), 240,
+        propertyChanged: (b, _, n) => ((SpeedGauge)b).OnMaxChanged((int)n));
+
     private readonly GaugeDrawable _drawable = new();
+
+    public int MaxValue
+    {
+        get => (int)GetValue(MaxValueProperty);
+        set => SetValue(MaxValueProperty, value);
+    }
+
+    private void OnMaxChanged(int max)
+    {
+        _drawable.MaxValue = max;
+        Canvas.Invalidate();
+    }
 
     public int SpeedKmh
     {

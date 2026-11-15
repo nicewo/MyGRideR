@@ -14,6 +14,41 @@
         </Border>
         <Border Style="{StaticResource CardStyle}">
             <VerticalStackLayout Spacing="{StaticResource SpaceMd}">
+                <Label Style="{StaticResource CaptionLabel}" Text="Araç modu (gösterge ölçeği)" />
+                <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="6">
+                    <Button Grid.Column="0" Text="Yaya" Command="{Binding SetVehicleModeCommand}" CommandParameter="0">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsWalk}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{StaticResource NeonBlue}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                    <Button Grid.Column="1" Text="Bisiklet" Command="{Binding SetVehicleModeCommand}" CommandParameter="1">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsBicycle}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{StaticResource NeonBlue}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                    <Button Grid.Column="2" Text="Motor" Command="{Binding SetVehicleModeCommand}" CommandParameter="2">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsMotorcycle}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{StaticResource NeonBlue}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                    <Button Grid.Column="3" Text="Araba" Command="{Binding SetVehicleModeCommand}" CommandParameter="3">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsCar}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{StaticResource NeonBlue}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+        <Border Style="{StaticResource CardStyle}">
+            <VerticalStackLayout Spacing="{StaticResource SpaceMd}">
                 <Label Style="{StaticResource CaptionLabel}" Text="{Binding CrashLogStatus}" />
                 <Entry
                     Keyboard="Email"

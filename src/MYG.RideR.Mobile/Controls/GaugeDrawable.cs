@@ -7,12 +7,13 @@ public sealed class GaugeDrawable : IDrawable
 {
     private const float StartAngle = 135f;
     private const float SweepAngle = 270f;
-    private const double MaxSpeed = 240;
 
     private static readonly Color Blue = Color.FromArgb("#00BFFF");
     private static readonly Color Red = Color.FromArgb("#FF3B30");
 
     public double Speed { get; set; }
+
+    public double MaxValue { get; set; } = 240;
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
@@ -27,7 +28,8 @@ public sealed class GaugeDrawable : IDrawable
         canvas.StrokeSize = 2;
         canvas.DrawCircle(cx, cy, size / 2f - 4f);
 
-        var ratio = (float)Math.Clamp(Speed / MaxSpeed, 0, 1);
+        var max = MaxValue > 0 ? MaxValue : 240;
+        var ratio = (float)Math.Clamp(Speed / max, 0, 1);
         const int segments = 135;
         canvas.StrokeSize = 10;
         canvas.StrokeLineCap = LineCap.Butt;
@@ -44,10 +46,12 @@ public sealed class GaugeDrawable : IDrawable
 
         canvas.FontColor = Color.FromArgb("#9AA7B8");
         canvas.FontSize = 13;
-        for (var v = 0; v <= MaxSpeed; v += 10)
+        var majorStep = max <= 20 ? 2 : max <= 60 ? 10 : 20;
+        var minorStep = majorStep / 2;
+        for (var v = 0; v <= max; v += minorStep)
         {
-            var angle = StartAngle + SweepAngle * (float)(v / MaxSpeed);
-            var major = v % 20 == 0;
+            var angle = StartAngle + SweepAngle * (float)(v / max);
+            var major = v % majorStep == 0;
             canvas.StrokeSize = major ? 2.5f : 1.2f;
             canvas.StrokeColor = major ? Colors.White : Color.FromArgb("#5C6878");
             var inner = outer - (major ? 18f : 12f);

@@ -81,6 +81,9 @@ public partial class DashboardViewModel : ObservableObject
     public partial string OdometerText { get; private set; } = LiveReadout.OdometerText(0);
 
     [ObservableProperty]
+    public partial int GaugeMaxKmh { get; private set; } = VehicleModes.MaxGaugeKmh(VehicleModes.Default);
+
+    [ObservableProperty]
     public partial bool IsRecording { get; private set; }
 
     [ObservableProperty]
@@ -138,6 +141,8 @@ public partial class DashboardViewModel : ObservableObject
     public async Task InitializeAsync()
     {
         Refresh();
+        GaugeMaxKmh = VehicleModes.MaxGaugeKmh(
+            (VehicleMode)Preferences.Default.Get("vehicle_mode", (int)VehicleModes.Default));
         await RefreshOdometerAsync();
 
         if (_recovered)
