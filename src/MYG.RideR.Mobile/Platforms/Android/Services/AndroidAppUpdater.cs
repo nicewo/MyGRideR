@@ -1,6 +1,5 @@
 using Android.Content;
 using Android.OS;
-using AndroidX.Core.Content;
 using MYG.RideR.Application.Abstractions;
 using MYG.RideR.Application.Updates;
 using MYG.RideR.Mobile.Interfaces;
@@ -99,7 +98,7 @@ public sealed class AndroidAppUpdater : IAppUpdater
             return;
         }
 
-        var uri = FileProvider.GetUriForFile(context, context.PackageName + ".fileprovider", new Java.IO.File(apkPath));
+        var uri = AndroidX.Core.Content.FileProvider.GetUriForFile(context, context.PackageName + ".fileprovider", new Java.IO.File(apkPath));
         var install = new Intent(Intent.ActionView);
         install.SetDataAndType(uri, ApkMimeType);
         install.AddFlags(ActivityFlags.NewTask | ActivityFlags.GrantReadUriPermission);
