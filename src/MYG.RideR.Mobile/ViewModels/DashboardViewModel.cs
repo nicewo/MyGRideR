@@ -16,6 +16,7 @@ public partial class DashboardViewModel : ObservableObject
     private readonly TimeProvider _timeProvider;
     private readonly ICrashLog _crashLog;
     private readonly IGnssStatusService _gnss;
+    private readonly ITripRepository _tripRepository;
     private bool _liveAcquired;
     private double? _lastCourse;
     private readonly SemaphoreSlim _liveGate = new(1, 1);
@@ -77,6 +78,9 @@ public partial class DashboardViewModel : ObservableObject
     public partial int MaximumSpeedKmh { get; private set; }
 
     [ObservableProperty]
+    public partial string OdometerText { get; private set; } = LiveReadout.OdometerText(0);
+
+    [ObservableProperty]
     public partial bool IsRecording { get; private set; }
 
     [ObservableProperty]
@@ -91,8 +95,10 @@ public partial class DashboardViewModel : ObservableObject
         ILiveLocationFeed liveFeed,
         TimeProvider timeProvider,
         ICrashLog crashLog,
-        IGnssStatusService gnss)
+        IGnssStatusService gnss,
+        ITripRepository tripRepository)
     {
+        _tripRepository = tripRepository;
         _gnss = gnss;
         _crashLog = crashLog;
         _liveFeed = liveFeed;
@@ -132,6 +138,7 @@ public partial class DashboardViewModel : ObservableObject
     public async Task InitializeAsync()
     {
         Refresh();
+        await RefreshOdometerAsync();
 
         if (_recovered)
             return;
@@ -168,6 +175,7 @@ public partial class DashboardViewModel : ObservableObject
             else
             {
                 await _tripRecorder.StopAsync();
+                await RefreshOdometerAsync();
             }
         }
         catch (InvalidOperationException ex)
@@ -187,6 +195,20 @@ public partial class DashboardViewModel : ObservableObject
         {
             IsBusy = false;
             Refresh();
+        }
+    }
+
+    private async Task RefreshOdometerAsync()
+    {
+        try
+        {
+            var headers = await _tripRepository.ListHeadersAsync();
+            OdometerText = LiveReadout.OdometerText(headers.Sum(h => h.DistanceKm));
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+            _crashLog.Record(ex, "Odometer refresh");
         }
     }
 

@@ -125,6 +125,21 @@
                     </VerticalStackLayout>
                 </Grid>
 
+                <!--  Kilometre sayacı  -->
+                <HorizontalStackLayout Spacing="8">
+                    <Label
+                        FontSize="12"
+                        Text="Kilometre sayacı"
+                        TextColor="{StaticResource TextSecondary}"
+                        VerticalOptions="Center" />
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="14"
+                        Text="{Binding OdometerText, StringFormat='{0} km'}"
+                        TextColor="{StaticResource TextPrimary}"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
+
                 <!--  GPS durumu  -->
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                     <Border

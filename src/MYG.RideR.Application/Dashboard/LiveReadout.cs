@@ -41,6 +41,12 @@ public static class LiveReadout
         _ => Dashboard.GpsQuality.Poor
     };
 
+    public static string OdometerText(double totalKm)
+    {
+        var km = double.IsFinite(totalKm) && totalKm > 0 ? (long)Math.Floor(totalKm) : 0;
+        return km.ToString("000000", CultureInfo.InvariantCulture);
+    }
+
     public static string CoordinateText(double latitude, double longitude) =>
         string.Create(CultureInfo.InvariantCulture,
             $"{Dms(latitude, latitude < 0 ? 'S' : 'N')}, {Dms(longitude, longitude < 0 ? 'W' : 'E')}");

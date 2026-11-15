@@ -54,4 +54,16 @@ public sealed class LiveReadoutTests
     {
         Assert.Equal(expected, LiveReadout.CoordinateText(lat, lon));
     }
+
+    [Theory]
+    [InlineData(26.4, "000026")]
+    [InlineData(0, "000000")]
+    [InlineData(-5, "000000")]
+    [InlineData(999999.9, "999999")]
+    [InlineData(1234567, "1234567")]
+    [InlineData(double.NaN, "000000")]
+    public void OdometerText_ZeroPadsWholeKilometres(double km, string expected)
+    {
+        Assert.Equal(expected, LiveReadout.OdometerText(km));
+    }
 }
