@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/logo.png" alt="MYG RideR" width="220" /></p>
+
 # MYG RideR
 
 ![CI](https://github.com/nicewo/MyGRideR/actions/workflows/ci.yml/badge.svg)

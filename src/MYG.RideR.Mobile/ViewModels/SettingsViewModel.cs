@@ -20,6 +20,8 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public string Title => "Ayarlar";
 
+    public string AppVersionText { get; } = $"Sürüm {AppInfo.VersionString} (build {AppInfo.BuildString})";
+
     [RelayCommand]
     public async Task LoadAsync()
     {

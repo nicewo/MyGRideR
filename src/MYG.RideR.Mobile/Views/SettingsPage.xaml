@@ -7,6 +7,12 @@
     <VerticalStackLayout Padding="{StaticResource PagePadding}" Spacing="{StaticResource SpaceMd}">
         <Label Style="{StaticResource PageTitleLabel}" Text="Ayarlar" />
         <Border Style="{StaticResource CardStyle}">
+            <VerticalStackLayout Spacing="{StaticResource SpaceMd}" HorizontalOptions="Center">
+                <Image Source="mygrider_logo.png" WidthRequest="180" HeightRequest="180" Aspect="AspectFit" HorizontalOptions="Center" />
+                <Label Style="{StaticResource CaptionLabel}" Text="{Binding AppVersionText}" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Border>
+        <Border Style="{StaticResource CardStyle}">
             <VerticalStackLayout Spacing="{StaticResource SpaceMd}">
                 <Label Style="{StaticResource CaptionLabel}" Text="{Binding CrashLogStatus}" />
                 <HorizontalStackLayout Spacing="{StaticResource SpaceMd}">

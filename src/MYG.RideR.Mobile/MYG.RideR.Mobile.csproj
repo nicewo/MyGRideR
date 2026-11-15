@@ -51,14 +51,15 @@
   <ItemGroup>
 
     <MauiIcon Include="Resources\AppIcon\appicon.svg"
-              ForegroundFile="Resources\AppIcon\appiconfg.svg"
-              Color="#12161C" />
+              ForegroundFile="Resources\AppIcon\appiconfg.png"
+              Color="#000000" />
 
-    <MauiSplashScreen Include="Resources\Splash\splash.svg"
-                      Color="#080B10"
-                      BaseSize="128,128" />
+    <MauiSplashScreen Include="Resources\Splash\splash.png"
+                      Color="#000000"
+                      BaseSize="160,160" />
 
     <MauiImage Include="Resources\Images\*" />
+    <MauiImage Update="Resources\Images\mygrider_logo.png" BaseSize="220,220" />
 
     <MauiFont Include="Resources\Fonts\*" />
 
