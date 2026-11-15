@@ -9,6 +9,27 @@ public sealed record TripStatistics(
     double AverageSpeedKmh,
     double MaximumSpeedKmh)
 {
+    public static TripStatistics Aggregate(IEnumerable<TripHeader> headers, DateTimeOffset now)
+    {
+        ArgumentNullException.ThrowIfNull(headers);
+
+        var count = 0;
+        var distance = 0.0;
+        var duration = TimeSpan.Zero;
+        var max = 0.0;
+
+        foreach (var h in headers)
+        {
+            count++;
+            distance += h.DistanceKm;
+            duration += h.Duration(now);
+            max = Math.Max(max, h.MaximumSpeedKmh);
+        }
+
+        var average = duration.TotalHours > 0 ? distance / duration.TotalHours : 0;
+        return new TripStatistics(count, distance, duration, average, max);
+    }
+
     public static TripStatistics Aggregate(IEnumerable<Trip> trips, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(trips);

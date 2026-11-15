@@ -36,7 +36,7 @@ public sealed partial class StatisticsViewModel : ObservableObject
     [RelayCommand]
     public async Task LoadAsync()
     {
-        var stats = TripStatistics.Aggregate(await _repository.ListAsync(), _timeProvider.GetUtcNow());
+        var stats = TripStatistics.Aggregate(await _repository.ListHeadersAsync(), _timeProvider.GetUtcNow());
         TripCountText = stats.TripCount.ToString();
         TotalDistanceText = $"{stats.TotalDistanceKm:0.0} km";
         TotalDurationText = $"{(int)stats.TotalDuration.TotalHours:00}:{stats.TotalDuration.Minutes:00}:{stats.TotalDuration.Seconds:00}";

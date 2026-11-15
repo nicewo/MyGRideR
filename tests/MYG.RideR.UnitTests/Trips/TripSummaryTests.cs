@@ -50,7 +50,7 @@ public sealed class TripSummaryTests
     [Fact]
     public void Aggregate_Empty_IsZero()
     {
-        var stats = TripStatistics.Aggregate([], T0);
+        var stats = TripStatistics.Aggregate(Array.Empty<Trip>(), T0);
         Assert.Equal(0, stats.TripCount);
         Assert.Equal(0, stats.AverageSpeedKmh);
     }

@@ -24,15 +24,15 @@ public sealed partial class TripsViewModel : ObservableObject
     [RelayCommand]
     public async Task LoadAsync()
     {
-        var trips = await _repository.ListAsync();
+        var headers = await _repository.ListHeadersAsync();
         var now = _timeProvider.GetUtcNow();
         Trips.Clear();
-        foreach (var trip in trips)
+        foreach (var h in headers)
         {
-            var summary = TripSummary.From(trip, now);
+            var duration = h.Duration(now);
             Trips.Add(new TripListItem(
-                trip.StartedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm"),
-                $"{summary.DistanceKm:0.0} km · {(int)summary.Duration.TotalHours:00}:{summary.Duration.Minutes:00}:{summary.Duration.Seconds:00} · max {summary.MaximumSpeedKmh:0} km/h"));
+                h.StartedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm"),
+                $"{h.DistanceKm:0.0} km · {(int)duration.TotalHours:00}:{duration.Minutes:00}:{duration.Seconds:00} · max {h.MaximumSpeedKmh:0} km/h"));
         }
     }
 }

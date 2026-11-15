@@ -89,6 +89,9 @@ public sealed class TripRecorderTests
 
         public Task<IReadOnlyList<Trip>> ListAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Trip>>(Saved);
+
+        public Task<IReadOnlyList<TripHeader>> ListHeadersAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<TripHeader>>([]);
     }
 
     private sealed class FakeTimeProvider : TimeProvider

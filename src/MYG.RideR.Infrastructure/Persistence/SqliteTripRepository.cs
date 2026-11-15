@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using MYG.RideR.Application.Abstractions;
+using MYG.RideR.Application.Trips;
 using MYG.RideR.Core.Domain;
 
 namespace MYG.RideR.Infrastructure.Persistence;
@@ -10,7 +11,10 @@ public sealed class SqliteTripRepository : ITripRepository
         CREATE TABLE IF NOT EXISTS Trips (
             Id TEXT PRIMARY KEY,
             StartedAt TEXT NOT NULL,
-            EndedAt TEXT NULL
+            EndedAt TEXT NULL,
+            DistanceM REAL NULL,
+            MaxSpeedKmh REAL NULL,
+            StoppedSeconds REAL NULL
         );
         CREATE TABLE IF NOT EXISTS Samples (
             TripId TEXT NOT NULL REFERENCES Trips(Id) ON DELETE CASCADE,
@@ -53,35 +57,127 @@ public sealed class SqliteTripRepository : ITripRepository
         await using (var insert = connection.CreateCommand())
         {
             insert.Transaction = tx;
-            insert.CommandText = "INSERT INTO Trips (Id, StartedAt, EndedAt) VALUES ($id, $start, $end)";
+            insert.CommandText = """
+                INSERT INTO Trips (Id, StartedAt, EndedAt, DistanceM, MaxSpeedKmh, StoppedSeconds)
+                VALUES ($id, $start, $end, $dist, $max, $stopped)
+                """;
             insert.Parameters.AddWithValue("$id", trip.Id.ToString());
             insert.Parameters.AddWithValue("$start", Format(trip.StartedAt));
             insert.Parameters.AddWithValue("$end", trip.EndedAt is { } e ? Format(e) : DBNull.Value);
+            if (trip.EndedAt is { } ended)
+            {
+                var summary = TripSummary.From(trip, ended);
+                insert.Parameters.AddWithValue("$dist", summary.DistanceKm * 1000);
+                insert.Parameters.AddWithValue("$max", summary.MaximumSpeedKmh);
+                insert.Parameters.AddWithValue("$stopped", summary.StoppedDuration.TotalSeconds);
+            }
+            else
+            {
+                insert.Parameters.AddWithValue("$dist", DBNull.Value);
+                insert.Parameters.AddWithValue("$max", DBNull.Value);
+                insert.Parameters.AddWithValue("$stopped", DBNull.Value);
+            }
+
             await insert.ExecuteNonQueryAsync(cancellationToken);
         }
 
-        var seq = 0;
-        foreach (var s in trip.Route.Samples)
-        {
-            await using var cmd = connection.CreateCommand();
-            cmd.Transaction = tx;
-            cmd.CommandText = """
-                INSERT INTO Samples (TripId, Seq, Latitude, Longitude, Timestamp, SpeedMps, AccuracyM, AltitudeM, CourseDeg)
-                VALUES ($id, $seq, $lat, $lon, $ts, $speed, $acc, $alt, $course)
-                """;
-            cmd.Parameters.AddWithValue("$id", trip.Id.ToString());
-            cmd.Parameters.AddWithValue("$seq", seq++);
-            cmd.Parameters.AddWithValue("$lat", s.Latitude);
-            cmd.Parameters.AddWithValue("$lon", s.Longitude);
-            cmd.Parameters.AddWithValue("$ts", Format(s.Timestamp));
-            cmd.Parameters.AddWithValue("$speed", s.SpeedMetersPerSecond is { } sp ? sp : DBNull.Value);
-            cmd.Parameters.AddWithValue("$acc", s.AccuracyMeters is { } a ? a : DBNull.Value);
-            cmd.Parameters.AddWithValue("$alt", s.AltitudeMeters is { } al ? al : DBNull.Value);
-            cmd.Parameters.AddWithValue("$course", s.CourseDegrees is { } cd ? cd : DBNull.Value);
-            await cmd.ExecuteNonQueryAsync(cancellationToken);
-        }
+        await InsertSamplesAsync(connection, tx, trip.Id, 0, trip.Route.Samples, cancellationToken);
 
         await tx.CommitAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<TripHeader>> ListHeadersAsync(CancellationToken cancellationToken = default)
+    {
+        await using var connection = await OpenAsync(cancellationToken);
+        var rows = new List<(Guid Id, DateTimeOffset Start, DateTimeOffset? End, double? Dist, double? Max, double? Stopped)>();
+
+        await using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText = """
+                SELECT Id, StartedAt, EndedAt, DistanceM, MaxSpeedKmh, StoppedSeconds
+                FROM Trips ORDER BY StartedAt DESC
+                """;
+            await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                var (id, start, end) = ReadHeader(reader);
+                rows.Add((id, start, end,
+                    reader.IsDBNull(3) ? null : reader.GetDouble(3),
+                    reader.IsDBNull(4) ? null : reader.GetDouble(4),
+                    reader.IsDBNull(5) ? null : reader.GetDouble(5)));
+            }
+        }
+
+        var headers = new List<TripHeader>(rows.Count);
+        foreach (var (id, start, end, dist, max, stopped) in rows)
+        {
+            if (dist is { } d && max is { } m && stopped is { } s)
+            {
+                headers.Add(new TripHeader(id, start, end, d / 1000, m, TimeSpan.FromSeconds(s)));
+                continue;
+            }
+
+            // Summary columns missing (legacy finished row, or unfinished trip): compute from samples.
+            var trip = Trip.Restore(id, start, end, await ReadSamplesAsync(connection, id, cancellationToken));
+            var summary = TripSummary.From(trip, end ?? DateTimeOffset.UtcNow);
+            headers.Add(new TripHeader(id, start, end, summary.DistanceKm, summary.MaximumSpeedKmh, summary.StoppedDuration));
+
+            if (end is not null)
+                await WriteSummaryAsync(connection, id, summary, cancellationToken);
+        }
+
+        return headers;
+    }
+
+    private static async Task WriteSummaryAsync(SqliteConnection connection, Guid id, TripSummary summary, CancellationToken ct)
+    {
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = "UPDATE Trips SET DistanceM = $dist, MaxSpeedKmh = $max, StoppedSeconds = $stopped WHERE Id = $id";
+        cmd.Parameters.AddWithValue("$id", id.ToString());
+        cmd.Parameters.AddWithValue("$dist", summary.DistanceKm * 1000);
+        cmd.Parameters.AddWithValue("$max", summary.MaximumSpeedKmh);
+        cmd.Parameters.AddWithValue("$stopped", summary.StoppedDuration.TotalSeconds);
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
+    private static async Task InsertSamplesAsync(
+        SqliteConnection connection, SqliteTransaction tx, Guid tripId, int firstSeq,
+        IReadOnlyList<LocationSample> samples, CancellationToken ct)
+    {
+        if (samples.Count == 0)
+            return;
+
+        await using var cmd = connection.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = """
+            INSERT INTO Samples (TripId, Seq, Latitude, Longitude, Timestamp, SpeedMps, AccuracyM, AltitudeM, CourseDeg)
+            VALUES ($id, $seq, $lat, $lon, $ts, $speed, $acc, $alt, $course)
+            """;
+        var pId = cmd.Parameters.Add("$id", SqliteType.Text);
+        var pSeq = cmd.Parameters.Add("$seq", SqliteType.Integer);
+        var pLat = cmd.Parameters.Add("$lat", SqliteType.Real);
+        var pLon = cmd.Parameters.Add("$lon", SqliteType.Real);
+        var pTs = cmd.Parameters.Add("$ts", SqliteType.Text);
+        var pSpeed = cmd.Parameters.Add("$speed", SqliteType.Real);
+        var pAcc = cmd.Parameters.Add("$acc", SqliteType.Real);
+        var pAlt = cmd.Parameters.Add("$alt", SqliteType.Real);
+        var pCourse = cmd.Parameters.Add("$course", SqliteType.Real);
+        cmd.Prepare();
+
+        pId.Value = tripId.ToString();
+        var seq = firstSeq;
+        foreach (var s in samples)
+        {
+            pSeq.Value = seq++;
+            pLat.Value = s.Latitude;
+            pLon.Value = s.Longitude;
+            pTs.Value = Format(s.Timestamp);
+            pSpeed.Value = s.SpeedMetersPerSecond is { } sp ? sp : DBNull.Value;
+            pAcc.Value = s.AccuracyMeters is { } a ? a : DBNull.Value;
+            pAlt.Value = s.AltitudeMeters is { } al ? al : DBNull.Value;
+            pCourse.Value = s.CourseDegrees is { } cd ? cd : DBNull.Value;
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
     }
 
     public async Task<Trip?> GetAsync(Guid id, CancellationToken cancellationToken = default)
@@ -138,37 +234,7 @@ public sealed class SqliteTripRepository : ITripRepository
         await using var connection = await OpenAsync(cancellationToken);
         await using var tx = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken);
 
-        await using var cmd = connection.CreateCommand();
-        cmd.Transaction = tx;
-        cmd.CommandText = """
-            INSERT INTO Samples (TripId, Seq, Latitude, Longitude, Timestamp, SpeedMps, AccuracyM, AltitudeM, CourseDeg)
-            VALUES ($id, $seq, $lat, $lon, $ts, $speed, $acc, $alt, $course)
-            """;
-        var pId = cmd.Parameters.Add("$id", SqliteType.Text);
-        var pSeq = cmd.Parameters.Add("$seq", SqliteType.Integer);
-        var pLat = cmd.Parameters.Add("$lat", SqliteType.Real);
-        var pLon = cmd.Parameters.Add("$lon", SqliteType.Real);
-        var pTs = cmd.Parameters.Add("$ts", SqliteType.Text);
-        var pSpeed = cmd.Parameters.Add("$speed", SqliteType.Real);
-        var pAcc = cmd.Parameters.Add("$acc", SqliteType.Real);
-        var pAlt = cmd.Parameters.Add("$alt", SqliteType.Real);
-        var pCourse = cmd.Parameters.Add("$course", SqliteType.Real);
-        cmd.Prepare();
-
-        pId.Value = tripId.ToString();
-        var seq = firstSeq;
-        foreach (var s in samples)
-        {
-            pSeq.Value = seq++;
-            pLat.Value = s.Latitude;
-            pLon.Value = s.Longitude;
-            pTs.Value = Format(s.Timestamp);
-            pSpeed.Value = s.SpeedMetersPerSecond is { } sp ? sp : DBNull.Value;
-            pAcc.Value = s.AccuracyMeters is { } a ? a : DBNull.Value;
-            pAlt.Value = s.AltitudeMeters is { } al ? al : DBNull.Value;
-            pCourse.Value = s.CourseDegrees is { } cd ? cd : DBNull.Value;
-            await cmd.ExecuteNonQueryAsync(cancellationToken);
-        }
+        await InsertSamplesAsync(connection, tx, tripId, firstSeq, samples, cancellationToken);
 
         await tx.CommitAsync(cancellationToken);
     }
@@ -176,10 +242,28 @@ public sealed class SqliteTripRepository : ITripRepository
     public async Task CompleteAsync(Guid tripId, DateTimeOffset endedAt, CancellationToken cancellationToken = default)
     {
         await using var connection = await OpenAsync(cancellationToken);
+
+        Trip? trip = null;
+        DateTimeOffset? start = null;
+        await using (var q = connection.CreateCommand())
+        {
+            q.CommandText = "SELECT StartedAt FROM Trips WHERE Id = $id";
+            q.Parameters.AddWithValue("$id", tripId.ToString());
+            if (await q.ExecuteScalarAsync(cancellationToken) is string s)
+                start = Parse(s);
+        }
+
+        if (start is { } startedAt)
+            trip = Trip.Restore(tripId, startedAt, endedAt, await ReadSamplesAsync(connection, tripId, cancellationToken));
+
         await using var cmd = connection.CreateCommand();
-        cmd.CommandText = "UPDATE Trips SET EndedAt = $end WHERE Id = $id";
+        cmd.CommandText = "UPDATE Trips SET EndedAt = $end, DistanceM = $dist, MaxSpeedKmh = $max, StoppedSeconds = $stopped WHERE Id = $id";
         cmd.Parameters.AddWithValue("$id", tripId.ToString());
         cmd.Parameters.AddWithValue("$end", Format(endedAt));
+        var summary = trip is null ? null : TripSummary.From(trip, endedAt);
+        cmd.Parameters.AddWithValue("$dist", summary is null ? DBNull.Value : summary.DistanceKm * 1000);
+        cmd.Parameters.AddWithValue("$max", summary is null ? DBNull.Value : summary.MaximumSpeedKmh);
+        cmd.Parameters.AddWithValue("$stopped", summary is null ? DBNull.Value : summary.StoppedDuration.TotalSeconds);
         await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
@@ -293,6 +377,25 @@ public sealed class SqliteTripRepository : ITripRepository
 
             await using var alter = connection.CreateCommand();
             alter.CommandText = $"ALTER TABLE Samples ADD COLUMN {column} REAL NULL";
+            await alter.ExecuteNonQueryAsync(ct);
+        }
+
+        var tripColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using (var info = connection.CreateCommand())
+        {
+            info.CommandText = "PRAGMA table_info(Trips)";
+            await using var reader = await info.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+                tripColumns.Add(reader.GetString(1));
+        }
+
+        foreach (var column in new[] { "DistanceM", "MaxSpeedKmh", "StoppedSeconds" })
+        {
+            if (tripColumns.Contains(column))
+                continue;
+
+            await using var alter = connection.CreateCommand();
+            alter.CommandText = $"ALTER TABLE Trips ADD COLUMN {column} REAL NULL";
             await alter.ExecuteNonQueryAsync(ct);
         }
     }

@@ -1,3 +1,4 @@
+using MYG.RideR.Application.Trips;
 using MYG.RideR.Core.Domain;
 
 namespace MYG.RideR.Application.Abstractions;
@@ -9,6 +10,9 @@ public interface ITripRepository
     Task<Trip?> GetAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<Trip>> ListAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Header + summary columns only (no samples), StartedAt DESC. Backfills NULL summary columns of finished trips.</summary>
+    Task<IReadOnlyList<TripHeader>> ListHeadersAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Writes the trip header row (EndedAt NULL) when a trip starts.</summary>
     Task CreateAsync(Guid id, DateTimeOffset startedAt, CancellationToken cancellationToken = default);
