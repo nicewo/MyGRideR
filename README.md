@@ -6,7 +6,7 @@
 
 **MYG RideR** is a dark-themed motorcycle dashboard and ride-tracking app foundation built with .NET MAUI and C#. The solution is organized with Clean Architecture and MVVM to keep UI, application logic, and infrastructure concerns separate.
 
-> **Project status:** Early development. The dashboard currently uses mock data; real GPS tracking, map integration, trip persistence, and complete ride-recording workflows are not yet implemented.
+> **Project status:** Early development. The dashboard uses real GPS, trips are persisted in SQLite, and the map is rendered with Mapsui. Background recording (screen off) is not yet implemented.
 
 ## Current scope
 

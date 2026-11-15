@@ -150,7 +150,7 @@ public sealed class SqliteTripRepository : ITripRepository
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = tx;
         cmd.CommandText = """
-            INSERT INTO Samples (TripId, Seq, Latitude, Longitude, Timestamp, SpeedMps, AccuracyM, AltitudeM, CourseDeg)
+            INSERT OR IGNORE INTO Samples (TripId, Seq, Latitude, Longitude, Timestamp, SpeedMps, AccuracyM, AltitudeM, CourseDeg)
             VALUES ($id, $seq, $lat, $lon, $ts, $speed, $acc, $alt, $course)
             """;
         var pId = cmd.Parameters.Add("$id", SqliteType.Text);

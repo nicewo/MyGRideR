@@ -45,6 +45,22 @@ public sealed class SqliteTripRepositoryIncrementalTests : IDisposable
     }
 
     [Fact]
+    public async Task AppendSamples_SameFirstSeqTwice_IsIdempotent()
+    {
+        var id = Guid.NewGuid();
+        await _repo.CreateAsync(id, T0);
+        LocationSample[] batch = [new(41.0, 29.0, T0), new(41.001, 29.0, T0.AddSeconds(10))];
+
+        await _repo.AppendSamplesAsync(id, 0, batch);
+        await _repo.AppendSamplesAsync(id, 0, batch);
+        await _repo.CompleteAsync(id, T0.AddSeconds(30));
+
+        var trip = await _repo.GetAsync(id);
+        Assert.NotNull(trip);
+        Assert.Equal(2, trip.Route.Samples.Count);
+    }
+
+    [Fact]
     public async Task ListUnfinished_ReturnsOnlyOpenTrips()
     {
         var open = Guid.NewGuid();
