@@ -37,8 +37,9 @@
                 Command="{Binding ToggleRecordingCommand}"
                 CornerRadius="32"
                 FontAttributes="Bold"
-                FontSize="12"
+                FontSize="14"
                 HeightRequest="64"
+                LineBreakMode="NoWrap"
                 Text="{Binding RecordButtonText}"
                 TextColor="White"
                 WidthRequest="64" />

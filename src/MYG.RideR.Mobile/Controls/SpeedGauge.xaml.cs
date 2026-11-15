@@ -6,22 +6,12 @@ public partial class SpeedGauge : ContentView
         nameof(SpeedKmh), typeof(int), typeof(SpeedGauge), 0,
         propertyChanged: (b, _, n) => ((SpeedGauge)b).OnSpeedChanged((int)n));
 
-    public static readonly BindableProperty GearProperty = BindableProperty.Create(
-        nameof(Gear), typeof(string), typeof(SpeedGauge), "-",
-        propertyChanged: (b, _, n) => ((SpeedGauge)b).GearLabel.Text = (string)n);
-
     private readonly GaugeDrawable _drawable = new();
 
     public int SpeedKmh
     {
         get => (int)GetValue(SpeedKmhProperty);
         set => SetValue(SpeedKmhProperty, value);
-    }
-
-    public string Gear
-    {
-        get => (string)GetValue(GearProperty);
-        set => SetValue(GearProperty, value);
     }
 
     public SpeedGauge()

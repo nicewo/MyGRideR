@@ -24,30 +24,6 @@
                 TextColor="{StaticResource GaugeUnitText}" />
         </VerticalStackLayout>
 
-        <Border
-            Margin="0,0,0,18"
-            Padding="16,6"
-            BackgroundColor="{StaticResource PanelBackground}"
-            HorizontalOptions="Center"
-            Stroke="{StaticResource NeonBlue}"
-            StrokeShape="RoundRectangle 10"
-            StrokeThickness="1.5"
-            VerticalOptions="End">
-            <HorizontalStackLayout Spacing="6">
-                <Label
-                    x:Name="GearLabel"
-                    FontAttributes="Bold"
-                    FontSize="22"
-                    Text="-"
-                    TextColor="White" />
-                <Label
-                    FontSize="12"
-                    Text="VİTES"
-                    TextColor="{StaticResource NeonBlue}"
-                    VerticalOptions="Center" />
-            </HorizontalStackLayout>
-        </Border>
-
     </Grid>
 
 </ContentView>

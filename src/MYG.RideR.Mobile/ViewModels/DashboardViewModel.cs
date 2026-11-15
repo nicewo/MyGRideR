@@ -39,9 +39,6 @@ public partial class DashboardViewModel : ObservableObject
     public partial string GpsStatus { get; private set; } = "GPS yok";
 
     [ObservableProperty]
-    public partial string Gear { get; private set; } = "-";
-
-    [ObservableProperty]
     public partial int AltitudeM { get; private set; }
 
     [ObservableProperty]
@@ -58,9 +55,6 @@ public partial class DashboardViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string BatteryText { get; private set; } = "%--";
-
-    [ObservableProperty]
-    public partial double FuelRatio { get; private set; } = 0.5;
 
     [ObservableProperty]
     public partial string TripTime { get; private set; } = "00:00";
