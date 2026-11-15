@@ -16,45 +16,29 @@
             Text="☰"
             TextColor="White" />
 
-        <Label
+        <Image
             Grid.Column="1"
-            FontSize="22"
-            Text="🏍"
-            TextColor="{StaticResource NeonBlue}"
-            VerticalOptions="Center" />
+            HeightRequest="32"
+            Source="mygrider_logo.png"
+            VerticalOptions="Center"
+            WidthRequest="32" />
 
         <Border
             Grid.Column="2"
             Padding="14,6"
             BackgroundColor="{StaticResource PanelBackground}"
             HorizontalOptions="Center"
-            Stroke="{StaticResource PanelStroke}"
+            Stroke="{Binding GpsQualityColor, Source={x:Reference Root}}"
             StrokeShape="RoundRectangle 16"
             StrokeThickness="1"
             VerticalOptions="Center">
-            <HorizontalStackLayout Spacing="8">
-                <Ellipse
-                    Fill="{StaticResource Success}"
-                    HeightRequest="9"
-                    VerticalOptions="Center"
-                    WidthRequest="9" />
-                <Label
-                    FontAttributes="Bold"
-                    FontSize="13"
-                    Text="GPS"
-                    TextColor="White"
-                    VerticalOptions="Center" />
-                <Label
-                    FontSize="13"
-                    Text="📶"
-                    TextColor="{StaticResource Success}"
-                    VerticalOptions="Center" />
-                <Label
-                    FontSize="12"
-                    Text="{Binding AccuracyText, Source={x:Reference Root}}"
-                    TextColor="{StaticResource TextSecondary}"
-                    VerticalOptions="Center" />
-            </HorizontalStackLayout>
+            <Label
+                FontAttributes="Bold"
+                FontSize="12"
+                LineBreakMode="NoWrap"
+                Text="{Binding GpsSummaryText, Source={x:Reference Root}}"
+                TextColor="{Binding GpsQualityColor, Source={x:Reference Root}}"
+                VerticalOptions="Center" />
         </Border>
 
         <HorizontalStackLayout Grid.Column="3" Spacing="4" VerticalOptions="Center">

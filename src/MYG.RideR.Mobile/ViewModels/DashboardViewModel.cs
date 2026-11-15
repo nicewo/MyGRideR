@@ -20,9 +20,6 @@ public partial class DashboardViewModel : ObservableObject
     private double? _lastCourse;
     private readonly SemaphoreSlim _liveGate = new(1, 1);
     private bool _recovered;
-    private string? _recordingError;
-    private DateTimeOffset _recordingErrorUntil;
-
     [ObservableProperty]
     public partial int SpeedKmh { get; private set; }
 
@@ -36,7 +33,13 @@ public partial class DashboardViewModel : ObservableObject
     public partial string DateText { get; private set; } = FormatDate(DateTime.Now);
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(GpsSummaryText))]
     public partial string GpsStatus { get; private set; } = "GPS yok";
+
+    [ObservableProperty]
+    public partial Color GpsQualityColor { get; private set; } = ThemeColor("Danger", "#F36B7F");
+
+    public string GpsSummaryText => $"{GpsStatus} · {SatelliteText} · {AccuracyText}";
 
     [ObservableProperty]
     public partial int AltitudeM { get; private set; }
@@ -48,9 +51,11 @@ public partial class DashboardViewModel : ObservableObject
     public partial string HeadingText { get; private set; } = "--";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(GpsSummaryText))]
     public partial string AccuracyText { get; private set; } = "±--";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(GpsSummaryText))]
     public partial string SatelliteText { get; private set; } = "--";
 
     [ObservableProperty]
@@ -153,7 +158,6 @@ public partial class DashboardViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            _recordingError = null;
             if (starting)
             {
                 await _tripRecorder.StartAsync();
@@ -183,12 +187,14 @@ public partial class DashboardViewModel : ObservableObject
         }
     }
 
-    private void ShowRecordingError(string message)
-    {
-        _recordingError = message;
-        _recordingErrorUntil = _timeProvider.GetUtcNow().AddSeconds(5);
-        GpsStatus = message;
-    }
+    private static void ShowRecordingError(string message) =>
+        MainThread.BeginInvokeOnMainThread(() =>
+            _ = CommunityToolkit.Maui.Alerts.Toast.Make(message, CommunityToolkit.Maui.Core.ToastDuration.Long).Show());
+
+    private static Color ThemeColor(string key, string fallbackHex) =>
+        Microsoft.Maui.Controls.Application.Current?.Resources.TryGetValue(key, out var value) == true && value is Color color
+            ? color
+            : Color.FromArgb(fallbackHex);
 
     private void Refresh()
     {
@@ -315,20 +321,18 @@ public partial class DashboardViewModel : ObservableObject
 
     private void ApplyQuality(GpsQuality quality)
     {
-        if (_recordingError is not null && _timeProvider.GetUtcNow() < _recordingErrorUntil)
+        GpsStatus = quality switch
         {
-            GpsStatus = _recordingError;
-        }
-        else
+            GpsQuality.Good => "GPS iyi",
+            GpsQuality.Fair or GpsQuality.Poor => "GPS zayıf",
+            _ => "GPS yok"
+        };
+        GpsQualityColor = quality switch
         {
-            _recordingError = null;
-            GpsStatus = quality switch
-            {
-                GpsQuality.Good => "GPS iyi",
-                GpsQuality.Fair or GpsQuality.Poor => "GPS zayıf",
-                _ => "GPS yok"
-            };
-        }
+            GpsQuality.Good => ThemeColor("Success", "#00D26A"),
+            GpsQuality.Fair or GpsQuality.Poor => ThemeColor("Warning", "#F4B860"),
+            _ => ThemeColor("Danger", "#F36B7F")
+        };
 
         if (quality == GpsQuality.NoFix)
         {

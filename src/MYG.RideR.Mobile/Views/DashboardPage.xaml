@@ -12,7 +12,10 @@
 
     <Grid RowDefinitions="56,*,Auto">
 
-        <controls:TopStatusBar Grid.Row="0" AccuracyText="{Binding AccuracyText}" />
+        <controls:TopStatusBar
+            Grid.Row="0"
+            GpsQualityColor="{Binding GpsQualityColor}"
+            GpsSummaryText="{Binding GpsSummaryText}" />
 
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="12,0" Spacing="10">
