@@ -1,8 +1,49 @@
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using MYG.RideR.Application.Diagnostics;
+using MYG.RideR.Mobile.Interfaces;
 
 namespace MYG.RideR.Mobile.ViewModels;
 
-public sealed class SettingsViewModel : ObservableObject
+public sealed partial class SettingsViewModel : ObservableObject
 {
-    public string Title => "Settings";
+    private readonly ICrashLog _crashLog;
+
+    [ObservableProperty]
+    private string _crashLogStatus = CrashLogStatusText.From(null);
+
+    public SettingsViewModel(ICrashLog crashLog)
+    {
+        _crashLog = crashLog;
+    }
+
+    public string Title => "Ayarlar";
+
+    [RelayCommand]
+    public async Task LoadAsync()
+    {
+        var text = await _crashLog.ReadAsync();
+        CrashLogStatus = CrashLogStatusText.From(text is null ? null : Encoding.UTF8.GetByteCount(text));
+    }
+
+    [RelayCommand]
+    private async Task ShareCrashLogAsync()
+    {
+        if (await _crashLog.ReadAsync() is null)
+        {
+            return;
+        }
+
+        await Share.Default.RequestAsync(new ShareFileRequest(
+            "MYG RideR hata kaydı",
+            new ShareFile(_crashLog.FilePath)));
+    }
+
+    [RelayCommand]
+    private async Task ClearCrashLogAsync()
+    {
+        await _crashLog.ClearAsync();
+        await LoadAsync();
+    }
 }

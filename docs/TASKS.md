@@ -19,7 +19,7 @@ Durum: `bekliyor` / `sürüyor` / `bitti`. Görev bitip build+test geçince sorm
 | 9 | Ara kayıt + çökme kurtarma (sürüş sırasında periyodik yazma, açılışta yarım kalanı kapatma) | bitti | kod-yazici + test-yazici | 114 test geçti, build 0 hata |
 | 10 | Liste performansı: Trips tablosunda özet sütunlar, listeler örnek yüklemesin, SaveAsync hazır komut | bitti | kod-yazici + test-yazici | build ok, 118 test geçti |
 | 11 | CI: GitHub Actions (birim testleri + Android build) | bitti | kod-yazici | build 0 hata, 125 test geçti; yerel OK, Actions sonucu kontrol edilecek |
-| 12 | Yerel çökme kaydı + Ayarlar'da paylaş/temizle | bekliyor | kod-yazici + test-yazici | - |
+| 12 | Yerel çökme kaydı + Ayarlar'da paylaş/temizle | bitti | kod-yazici + test-yazici | build 0 hata (Android dahil), 129 test geçti; cihazda doğrulanmadı (#1) |
 | 13 | Android release imzalama altyapısı (sır repoda yok) + docs/Release.md | bekliyor | basit-duzeltici | - |
 
 ## Görev detayları

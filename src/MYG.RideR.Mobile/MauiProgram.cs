@@ -38,6 +38,7 @@ public static class MauiProgram
             .AddTransient<TripsPage>()
             .AddTransient<StatisticsPage>()
             .AddTransient<SettingsPage>()
+            .AddSingleton<ICrashLog, CrashLogService>()
             .AddSingleton<IClockService, ClockService>()
             .AddSingleton<ILocationService, MauiLocationService>();
 #if ANDROID
@@ -49,6 +50,8 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
-        return builder.Build();
+        var app = builder.Build();
+        app.Services.GetRequiredService<ICrashLog>().Install();
+        return app;
     }
 }

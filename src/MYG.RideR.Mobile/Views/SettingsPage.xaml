@@ -3,11 +3,17 @@
     x:Class="MYG.RideR.Mobile.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="Settings">
+    Title="Ayarlar">
     <VerticalStackLayout Padding="{StaticResource PagePadding}" Spacing="{StaticResource SpaceMd}">
-        <Label Style="{StaticResource PageTitleLabel}" Text="Settings" />
+        <Label Style="{StaticResource PageTitleLabel}" Text="Ayarlar" />
         <Border Style="{StaticResource CardStyle}">
-            <Label Style="{StaticResource CaptionLabel}" Text="Preferences surface reserved." />
+            <VerticalStackLayout Spacing="{StaticResource SpaceMd}">
+                <Label Style="{StaticResource CaptionLabel}" Text="{Binding CrashLogStatus}" />
+                <HorizontalStackLayout Spacing="{StaticResource SpaceMd}">
+                    <Button Command="{Binding ShareCrashLogCommand}" Text="Paylaş" />
+                    <Button Command="{Binding ClearCrashLogCommand}" Text="Temizle" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
         </Border>
     </VerticalStackLayout>
 </ContentPage>
