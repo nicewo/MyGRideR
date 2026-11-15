@@ -31,10 +31,16 @@ public sealed class TripRecorderTests
     private sealed class FakeRepository : ITripRepository
     {
         public List<Trip> Saved { get; } = [];
-    public bool FailNextSave { get; set; }
+        public bool FailNextSave { get; set; }
 
         public Task SaveAsync(Trip trip, CancellationToken cancellationToken = default)
         {
+            if (FailNextSave)
+            {
+                FailNextSave = false;
+                throw new IOException("save failed");
+            }
+
             Saved.Add(trip);
             return Task.CompletedTask;
         }
@@ -139,5 +145,46 @@ public sealed class TripRecorderTests
         var (recorder, _, _, _) = Create();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => recorder.StopAsync());
+    }
+
+    [Fact]
+    public async Task Stop_WhenSaveFails_KeepsTripAndThrows()
+    {
+        var (recorder, _, repo, _) = Create();
+        var trip = await recorder.StartAsync();
+        repo.FailNextSave = true;
+
+        await Assert.ThrowsAsync<IOException>(() => recorder.StopAsync());
+
+        Assert.Same(trip, recorder.CurrentTrip);
+        Assert.Equal(TripStatus.Completed, trip.Status);
+        Assert.Empty(repo.Saved);
+    }
+
+    [Fact]
+    public async Task Stop_RetryAfterSaveFailure_SavesAndClearsTrip()
+    {
+        var (recorder, location, repo, _) = Create();
+        var trip = await recorder.StartAsync();
+        repo.FailNextSave = true;
+        await Assert.ThrowsAsync<IOException>(() => recorder.StopAsync());
+
+        var stopped = await recorder.StopAsync();
+
+        Assert.Same(trip, stopped);
+        Assert.Single(repo.Saved);
+        Assert.Null(recorder.CurrentTrip);
+        Assert.False(location.Started);
+    }
+
+    [Fact]
+    public async Task Start_WhenUnsavedTripExists_Throws()
+    {
+        var (recorder, _, repo, _) = Create();
+        await recorder.StartAsync();
+        repo.FailNextSave = true;
+        await Assert.ThrowsAsync<IOException>(() => recorder.StopAsync());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => recorder.StartAsync());
     }
 }
