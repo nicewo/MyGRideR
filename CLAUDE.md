@@ -21,7 +21,7 @@ Hedef: en az token ile doğru sonuç. Her iş en ucuz yeterli katmana verilir.
 - Aynı bilgiyi tekrar okuma/türetme. Uzun sohbetlerde gereksiz özet ve tekrar yok.
 - Çıktı kısa: ne değişti, doğrulama sonucu. Dosya içeriğini sohbete dökme.
 - Build/test çıktısını süz (`| tail`, `--nologo -v q`).
-- Commit yalnızca kullanıcı isteyince.
+- Her görev bitince build+test geçtiyse kullanıcıya sormadan commit at ve push et. Build/test kırıksa commit yok, sorunu raporla.
 - Gerçek harcama yalnızca `/cost` ile görülür. Her kilometre taşında (faz bitişi, büyük refactor, commit öncesi) kullanıcıya `/cost` çalıştırmasını hatırlat.
 
 ## Doğrulama
