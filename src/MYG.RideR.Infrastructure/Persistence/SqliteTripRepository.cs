@@ -20,6 +20,8 @@ public sealed class SqliteTripRepository : ITripRepository
             Timestamp TEXT NOT NULL,
             SpeedMps REAL NULL,
             AccuracyM REAL NULL,
+            AltitudeM REAL NULL,
+            CourseDeg REAL NULL,
             PRIMARY KEY (TripId, Seq)
         );
         """;
@@ -64,8 +66,8 @@ public sealed class SqliteTripRepository : ITripRepository
             await using var cmd = connection.CreateCommand();
             cmd.Transaction = tx;
             cmd.CommandText = """
-                INSERT INTO Samples (TripId, Seq, Latitude, Longitude, Timestamp, SpeedMps, AccuracyM)
-                VALUES ($id, $seq, $lat, $lon, $ts, $speed, $acc)
+                INSERT INTO Samples (TripId, Seq, Latitude, Longitude, Timestamp, SpeedMps, AccuracyM, AltitudeM, CourseDeg)
+                VALUES ($id, $seq, $lat, $lon, $ts, $speed, $acc, $alt, $course)
                 """;
             cmd.Parameters.AddWithValue("$id", trip.Id.ToString());
             cmd.Parameters.AddWithValue("$seq", seq++);
@@ -74,6 +76,8 @@ public sealed class SqliteTripRepository : ITripRepository
             cmd.Parameters.AddWithValue("$ts", Format(s.Timestamp));
             cmd.Parameters.AddWithValue("$speed", s.SpeedMetersPerSecond is { } sp ? sp : DBNull.Value);
             cmd.Parameters.AddWithValue("$acc", s.AccuracyMeters is { } a ? a : DBNull.Value);
+            cmd.Parameters.AddWithValue("$alt", s.AltitudeMeters is { } al ? al : DBNull.Value);
+            cmd.Parameters.AddWithValue("$course", s.CourseDegrees is { } cd ? cd : DBNull.Value);
             await cmd.ExecuteNonQueryAsync(cancellationToken);
         }
 
@@ -130,7 +134,7 @@ public sealed class SqliteTripRepository : ITripRepository
     {
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = """
-            SELECT Latitude, Longitude, Timestamp, SpeedMps, AccuracyM
+            SELECT Latitude, Longitude, Timestamp, SpeedMps, AccuracyM, AltitudeM, CourseDeg
             FROM Samples WHERE TripId = $id ORDER BY Seq
             """;
         cmd.Parameters.AddWithValue("$id", tripId.ToString());
@@ -144,7 +148,9 @@ public sealed class SqliteTripRepository : ITripRepository
                 reader.GetDouble(1),
                 Parse(reader.GetString(2)),
                 reader.IsDBNull(3) ? null : reader.GetDouble(3),
-                reader.IsDBNull(4) ? null : reader.GetDouble(4)));
+                reader.IsDBNull(4) ? null : reader.GetDouble(4),
+                reader.IsDBNull(5) ? null : reader.GetDouble(5),
+                reader.IsDBNull(6) ? null : reader.GetDouble(6)));
         }
 
         return samples;
@@ -171,6 +177,7 @@ public sealed class SqliteTripRepository : ITripRepository
                     await using var schema = connection.CreateCommand();
                     schema.CommandText = Schema;
                     await schema.ExecuteNonQueryAsync(ct);
+                    await MigrateSamplesAsync(connection, ct);
                     _initialized = true;
                 }
             }
@@ -181,6 +188,28 @@ public sealed class SqliteTripRepository : ITripRepository
         }
 
         return connection;
+    }
+
+    private static async Task MigrateSamplesAsync(SqliteConnection connection, CancellationToken ct)
+    {
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using (var info = connection.CreateCommand())
+        {
+            info.CommandText = "PRAGMA table_info(Samples)";
+            await using var reader = await info.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+                columns.Add(reader.GetString(1));
+        }
+
+        foreach (var column in new[] { "AltitudeM", "CourseDeg" })
+        {
+            if (columns.Contains(column))
+                continue;
+
+            await using var alter = connection.CreateCommand();
+            alter.CommandText = $"ALTER TABLE Samples ADD COLUMN {column} REAL NULL";
+            await alter.ExecuteNonQueryAsync(ct);
+        }
     }
 
     private static string Format(DateTimeOffset value) => value.ToString("O");

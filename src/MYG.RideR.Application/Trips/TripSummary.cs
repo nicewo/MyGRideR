@@ -7,9 +7,12 @@ public sealed record TripSummary(
     double DistanceKm,
     double AverageSpeedKmh,
     double MaximumSpeedKmh,
-    TimeSpan Duration)
+    TimeSpan Duration,
+    TimeSpan StoppedDuration)
 {
-    public static TripSummary Empty { get; } = new(0, 0, 0, 0, TimeSpan.Zero);
+    public const double StopSpeedThresholdKmh = 3;
+
+    public static TripSummary Empty { get; } = new(0, 0, 0, 0, TimeSpan.Zero, TimeSpan.Zero);
 
     public static TripSummary From(Trip trip, DateTimeOffset now)
     {
@@ -24,6 +27,30 @@ public sealed record TripSummary(
             trip.DistanceKm,
             trip.AverageSpeedKmh(now),
             trip.MaximumSpeedKmh,
-            trip.Duration(now));
+            trip.Duration(now),
+            StoppedDurationOf(trip, now));
     }
+
+    private static TimeSpan StoppedDurationOf(Trip trip, DateTimeOffset now)
+    {
+        var samples = trip.Route.Samples;
+        var stopped = TimeSpan.Zero;
+        var end = trip.EndedAt ?? now;
+
+        for (var i = 0; i < samples.Count; i++)
+        {
+            if (!IsStopped(samples[i]))
+                continue;
+
+            if (i + 1 < samples.Count)
+                stopped += samples[i + 1].Timestamp - samples[i].Timestamp;
+            else if (end > samples[i].Timestamp)
+                stopped += end - samples[i].Timestamp;
+        }
+
+        return stopped;
+    }
+
+    private static bool IsStopped(LocationSample sample) =>
+        sample.SpeedMetersPerSecond is { } speed && speed * 3.6 < StopSpeedThresholdKmh;
 }

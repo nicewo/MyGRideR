@@ -18,11 +18,11 @@ public partial class BottomToolbar : ContentView
         await Shell.Current.GoToAsync(nameof(SettingsPage));
 
     private async void PhotoClicked(object? sender, EventArgs e) =>
-        await Shell.Current.DisplayAlert("Fotoğraf Ekle", "Bu özellik yakında eklenecek.", "Tamam");
+        await Shell.Current.CurrentPage.DisplayAlertAsync("Fotoğraf Ekle", "Bu özellik yakında eklenecek.", "Tamam");
 
     private async void AlertClicked(object? sender, EventArgs e)
     {
         _voiceAlerts = !_voiceAlerts;
-        await Shell.Current.DisplayAlert("Sesli Uyarı", _voiceAlerts ? "Sesli uyarılar açık." : "Sesli uyarılar kapalı.", "Tamam");
+        await Shell.Current.CurrentPage.DisplayAlertAsync("Sesli Uyarı", _voiceAlerts ? "Sesli uyarılar açık." : "Sesli uyarılar kapalı.", "Tamam");
     }
 }

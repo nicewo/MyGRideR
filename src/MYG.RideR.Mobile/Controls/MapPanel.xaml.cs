@@ -27,10 +27,10 @@ public partial class MapPanel : ContentView
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Konum", $"Konum alınamadı: {ex.Message}", "Tamam");
+            await Shell.Current.CurrentPage.DisplayAlertAsync("Konum", $"Konum alınamadı: {ex.Message}", "Tamam");
         }
     }
 
     private async void LayersClicked(object? sender, EventArgs e) =>
-        await Shell.Current.DisplayAlert("Katmanlar", "Harita: OpenStreetMap. Ek katmanlar yakında.", "Tamam");
+        await Shell.Current.CurrentPage.DisplayAlertAsync("Katmanlar", "Harita: OpenStreetMap. Ek katmanlar yakında.", "Tamam");
 }

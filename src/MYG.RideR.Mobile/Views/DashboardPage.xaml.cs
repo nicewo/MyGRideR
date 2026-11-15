@@ -21,6 +21,7 @@ public partial class DashboardPage : ContentPage
         try
         {
             await _viewModel.InitializeAsync();
+            await _viewModel.StartLiveAsync();
         }
         catch (Exception ex)
         {
@@ -28,9 +29,18 @@ public partial class DashboardPage : ContentPage
         }
     }
 
-    protected override void OnDisappearing()
+    protected override async void OnDisappearing()
     {
         _viewModel.StopClock();
         base.OnDisappearing();
+
+        try
+        {
+            await _viewModel.StopLiveAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Dashboard live feed release failed: {ex}");
+        }
     }
 }

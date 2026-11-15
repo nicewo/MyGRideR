@@ -52,7 +52,9 @@ public sealed class MauiLocationService : ILocationService
                 l.Longitude,
                 l.Timestamp,
                 l.Speed is { } s and >= 0 ? s : null,
-                l.Accuracy is { } a and >= 0 ? a : null));
+                l.Accuracy is { } a and >= 0 ? a : null,
+                l.Altitude is { } alt && double.IsFinite(alt) ? alt : null,
+                l.Course is { } c && double.IsFinite(c) && c >= 0 ? c : null));
         }
         catch (ArgumentOutOfRangeException)
         {

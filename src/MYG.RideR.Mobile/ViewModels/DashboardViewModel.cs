@@ -1,7 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MYG.RideR.Application.Abstractions;
+using MYG.RideR.Application.Dashboard;
 using MYG.RideR.Application.Trips;
+using MYG.RideR.Core.Domain;
 using MYG.RideR.Mobile.Interfaces;
 
 namespace MYG.RideR.Mobile.ViewModels;
@@ -10,7 +12,13 @@ public partial class DashboardViewModel : ObservableObject
 {
     private readonly ITripRecorder _tripRecorder;
     private readonly IClockService _clockService;
+    private readonly ILiveLocationFeed _liveFeed;
     private readonly TimeProvider _timeProvider;
+    private bool _liveAcquired;
+    private double? _lastCourse;
+    private readonly SemaphoreSlim _liveGate = new(1, 1);
+    private string? _recordingError;
+    private DateTimeOffset _recordingErrorUntil;
 
     [ObservableProperty]
     public partial int SpeedKmh { get; private set; }
@@ -25,7 +33,7 @@ public partial class DashboardViewModel : ObservableObject
     public partial string DateText { get; private set; } = FormatDate(DateTime.Now);
 
     [ObservableProperty]
-    public partial string GpsStatus { get; private set; } = "GPS hazır değil";
+    public partial string GpsStatus { get; private set; } = "GPS yok";
 
     [ObservableProperty]
     public partial string Gear { get; private set; } = "-";
@@ -37,7 +45,10 @@ public partial class DashboardViewModel : ObservableObject
     public partial string StopTime { get; private set; } = "00:00";
 
     [ObservableProperty]
-    public partial string HeadingText { get; private set; } = "K 0°";
+    public partial string HeadingText { get; private set; } = "--";
+
+    [ObservableProperty]
+    public partial string AccuracyText { get; private set; } = "±--";
 
     [ObservableProperty]
     public partial string SatelliteText { get; private set; } = "0/0";
@@ -72,8 +83,10 @@ public partial class DashboardViewModel : ObservableObject
     public DashboardViewModel(
         ITripRecorder tripRecorder,
         IClockService clockService,
+        ILiveLocationFeed liveFeed,
         TimeProvider timeProvider)
     {
+        _liveFeed = liveFeed;
         _tripRecorder = tripRecorder;
         _clockService = clockService;
         _timeProvider = timeProvider;
@@ -124,6 +137,7 @@ public partial class DashboardViewModel : ObservableObject
         try
         {
             IsBusy = true;
+            _recordingError = null;
             if (_tripRecorder.CurrentTrip is null)
             {
                 await _tripRecorder.StartAsync();
@@ -135,6 +149,8 @@ public partial class DashboardViewModel : ObservableObject
         }
         catch (InvalidOperationException ex)
         {
+            _recordingError = ex.Message;
+            _recordingErrorUntil = _timeProvider.GetUtcNow().AddSeconds(5);
             GpsStatus = ex.Message;
         }
         finally
@@ -152,20 +168,128 @@ public partial class DashboardViewModel : ObservableObject
 
         if (trip is null)
         {
-            if (GpsStatus == "Kayıt açık")
-            {
-                GpsStatus = "GPS hazır değil";
-            }
-
+            var latestSpeed = _liveFeed.LatestSample?.SpeedMetersPerSecond;
+            SpeedKmh = latestSpeed is { } mps ? (int)Math.Round(mps * 3.6) : 0;
             return;
         }
 
         var summary = TripSummary.From(trip, _timeProvider.GetUtcNow());
-        GpsStatus = "Kayıt açık";
         SpeedKmh = (int)Math.Round(summary.CurrentSpeedKmh);
         DistanceKm = Math.Round(summary.DistanceKm, 2);
         AverageSpeedKmh = (int)Math.Round(summary.AverageSpeedKmh);
         MaximumSpeedKmh = (int)Math.Round(summary.MaximumSpeedKmh);
-        TripTime = summary.Duration.ToString(summary.Duration.TotalHours >= 1 ? @"hh\:mm\:ss" : @"mm\:ss");
+        TripTime = FormatSpan(summary.Duration);
+        StopTime = FormatSpan(summary.StoppedDuration);
+    }
+
+    private static string FormatSpan(TimeSpan span) =>
+        span.ToString(span.TotalHours >= 1 ? @"hh\:mm\:ss" : @"mm\:ss");
+
+    public async Task StartLiveAsync()
+    {
+        await _liveGate.WaitAsync();
+        try
+        {
+            if (_liveAcquired)
+            {
+                return;
+            }
+
+            _liveFeed.SampleReceived += LiveFeed_SampleReceived;
+            bool acquired;
+            try
+            {
+                acquired = await _liveFeed.AcquireAsync();
+            }
+            catch (Exception)
+            {
+                acquired = false;
+            }
+
+            if (acquired)
+            {
+                _liveAcquired = true;
+                if (_liveFeed.LatestSample is { } latest)
+                {
+                    ApplyLive(latest);
+                }
+            }
+            else
+            {
+                _liveFeed.SampleReceived -= LiveFeed_SampleReceived;
+                ApplyQuality(GpsQuality.NoFix);
+            }
+        }
+        finally
+        {
+            _liveGate.Release();
+        }
+    }
+
+    public async Task StopLiveAsync()
+    {
+        await _liveGate.WaitAsync();
+        try
+        {
+            if (!_liveAcquired)
+            {
+                return;
+            }
+
+            _liveAcquired = false;
+            _liveFeed.SampleReceived -= LiveFeed_SampleReceived;
+            await _liveFeed.ReleaseAsync();
+        }
+        finally
+        {
+            _liveGate.Release();
+        }
+    }
+
+    private void LiveFeed_SampleReceived(LocationSample sample)
+    {
+        MainThread.BeginInvokeOnMainThread(() => ApplyLive(sample));
+    }
+
+    private void ApplyLive(LocationSample sample)
+    {
+        if (sample.AltitudeMeters is { } altitude)
+        {
+            AltitudeM = (int)Math.Round(altitude);
+        }
+
+        var moving = sample.SpeedMetersPerSecond is not { } mps || mps * 3.6 >= TripSummary.StopSpeedThresholdKmh;
+        if (moving && sample.CourseDegrees is { } course)
+        {
+            _lastCourse = course;
+        }
+
+        HeadingText = LiveReadout.HeadingText(_lastCourse);
+        AccuracyText = LiveReadout.AccuracyText(sample.AccuracyMeters);
+        ApplyQuality(LiveReadout.GpsQuality(sample.AccuracyMeters));
+        Refresh();
+    }
+
+    private void ApplyQuality(GpsQuality quality)
+    {
+        if (_recordingError is not null && _timeProvider.GetUtcNow() < _recordingErrorUntil)
+        {
+            GpsStatus = _recordingError;
+        }
+        else
+        {
+            _recordingError = null;
+            GpsStatus = quality switch
+            {
+                GpsQuality.Good => "GPS iyi",
+                GpsQuality.Fair or GpsQuality.Poor => "GPS zayıf",
+                _ => "GPS yok"
+            };
+        }
+
+        if (quality == GpsQuality.NoFix)
+        {
+            AccuracyText = LiveReadout.AccuracyText(null);
+        }
     }
 }

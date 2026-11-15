@@ -7,7 +7,9 @@ public sealed record LocationSample
         double longitude,
         DateTimeOffset timestamp,
         double? speedMetersPerSecond = null,
-        double? accuracyMeters = null)
+        double? accuracyMeters = null,
+        double? altitudeMeters = null,
+        double? courseDegrees = null)
     {
         if (latitude is < -90 or > 90 || double.IsNaN(latitude))
             throw new ArgumentOutOfRangeException(nameof(latitude));
@@ -17,12 +19,18 @@ public sealed record LocationSample
             throw new ArgumentOutOfRangeException(nameof(speedMetersPerSecond));
         if (accuracyMeters is < 0)
             throw new ArgumentOutOfRangeException(nameof(accuracyMeters));
+        if (altitudeMeters is { } alt && !double.IsFinite(alt))
+            throw new ArgumentOutOfRangeException(nameof(altitudeMeters));
+        if (courseDegrees is { } crs && (!double.IsFinite(crs) || crs < 0 || crs > 360))
+            throw new ArgumentOutOfRangeException(nameof(courseDegrees));
 
         Latitude = latitude;
         Longitude = longitude;
         Timestamp = timestamp;
         SpeedMetersPerSecond = speedMetersPerSecond;
         AccuracyMeters = accuracyMeters;
+        AltitudeMeters = altitudeMeters;
+        CourseDegrees = courseDegrees is { } c && c >= 360 ? 0 : courseDegrees;
     }
 
     public double Latitude { get; }
@@ -30,6 +38,8 @@ public sealed record LocationSample
     public DateTimeOffset Timestamp { get; }
     public double? SpeedMetersPerSecond { get; }
     public double? AccuracyMeters { get; }
+    public double? AltitudeMeters { get; }
+    public double? CourseDegrees { get; }
 
     public double DistanceMetersTo(LocationSample other)
     {

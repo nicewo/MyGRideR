@@ -5,17 +5,17 @@ namespace MYG.RideR.Application.Trips;
 
 public sealed class TripRecorder : ITripRecorder
 {
-    private readonly ILocationService _locationService;
+    private readonly ILiveLocationFeed _liveFeed;
     private readonly ITripRepository _repository;
     private readonly TimeProvider _timeProvider;
     private readonly object _gate = new();
 
     public TripRecorder(
-        ILocationService locationService,
+        ILiveLocationFeed liveFeed,
         ITripRepository repository,
         TimeProvider timeProvider)
     {
-        _locationService = locationService;
+        _liveFeed = liveFeed;
         _repository = repository;
         _timeProvider = timeProvider;
     }
@@ -29,11 +29,23 @@ public sealed class TripRecorder : ITripRecorder
 
         var trip = Trip.Start(_timeProvider.GetUtcNow());
         CurrentTrip = trip;
-        _locationService.LocationChanged += OnLocationChanged;
+        _liveFeed.SampleReceived += OnLocationChanged;
 
-        if (!await _locationService.StartAsync(cancellationToken))
+        bool acquired;
+        try
         {
-            _locationService.LocationChanged -= OnLocationChanged;
+            acquired = await _liveFeed.AcquireAsync(cancellationToken);
+        }
+        catch
+        {
+            _liveFeed.SampleReceived -= OnLocationChanged;
+            CurrentTrip = null;
+            throw;
+        }
+
+        if (!acquired)
+        {
+            _liveFeed.SampleReceived -= OnLocationChanged;
             CurrentTrip = null;
             throw new InvalidOperationException("Location service could not be started.");
         }
@@ -45,8 +57,8 @@ public sealed class TripRecorder : ITripRecorder
     {
         var trip = CurrentTrip ?? throw new InvalidOperationException("No trip is being recorded.");
 
-        _locationService.LocationChanged -= OnLocationChanged;
-        await _locationService.StopAsync(cancellationToken);
+        _liveFeed.SampleReceived -= OnLocationChanged;
+        await _liveFeed.ReleaseAsync(cancellationToken);
 
         lock (_gate)
         {

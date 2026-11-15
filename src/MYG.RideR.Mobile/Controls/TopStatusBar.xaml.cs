@@ -4,6 +4,15 @@ namespace MYG.RideR.Mobile.Controls;
 
 public partial class TopStatusBar : ContentView
 {
+    public static readonly BindableProperty AccuracyTextProperty =
+        BindableProperty.Create(nameof(AccuracyText), typeof(string), typeof(TopStatusBar), "±--");
+
+    public string AccuracyText
+    {
+        get => (string)GetValue(AccuracyTextProperty);
+        set => SetValue(AccuracyTextProperty, value);
+    }
+
     public TopStatusBar()
     {
         InitializeComponent();

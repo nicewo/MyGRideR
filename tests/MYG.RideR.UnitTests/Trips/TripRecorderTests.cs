@@ -1,4 +1,5 @@
 using MYG.RideR.Application.Abstractions;
+using MYG.RideR.Application.Location;
 using MYG.RideR.Application.Trips;
 using MYG.RideR.Core.Domain;
 
@@ -55,7 +56,7 @@ public sealed class TripRecorderTests
         var location = new FakeLocationService();
         var repo = new FakeRepository();
         var time = new FakeTimeProvider();
-        return (new TripRecorder(location, repo, time), location, repo, time);
+        return (new TripRecorder(new LiveLocationFeed(location), repo, time), location, repo, time);
     }
 
     [Fact]
