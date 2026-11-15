@@ -13,7 +13,7 @@ Durum: `bekliyor` / `sürüyor` / `bitti`. Görev bitip build+test geçince sorm
 | 3 | Küçük bilinen sorunlar (liste aşağıda; cihaz doğrulamasında çıkanlar da buraya) | bekliyor | basit-duzeltici | - |
 | 4 | Faz 5: telemetri, diagnostik, crash reporting, release signing, CI | bekliyor | Opus plan -> kod-yazici | - |
 | 5 | Durdurma hatasına dayanıklılık (TripRecorder.StopAsync idempotent + VM hata yakalama) | bitti | kod-yazici + test-yazici | 96 test geçti, build 0 hata (kod commit 01e1d0a'da zaten vardı; doğrulandı) |
-| 6 | GPS örnek filtresi: mesafe jitter + max hız sıçraması | bekliyor | kod-yazici + test-yazici | - |
+| 6 | GPS örnek filtresi: mesafe jitter + max hız sıçraması | bitti | kod-yazici + test-yazici | 103 test geçti, build 0 hata |
 | 7 | Thread-safe özet: UI, rota listesini kilitsiz okumasın | bekliyor | kod-yazici + test-yazici | - |
 | 8 | iOS / MacCatalyst konum izni metni (Info.plist) | bekliyor | basit-duzeltici | - |
 | 9 | Ara kayıt + çökme kurtarma (sürüş sırasında periyodik yazma, açılışta yarım kalanı kapatma) | bekliyor | kod-yazici + test-yazici | - |

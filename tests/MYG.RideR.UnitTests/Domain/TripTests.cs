@@ -51,6 +51,7 @@ public sealed class TripTests
         var trip = Trip.Start(T0);
         trip.AddSample(new LocationSample(0, 0, T0, speedMetersPerSecond: 10));
         trip.AddSample(new LocationSample(0.09, 0, T0.AddHours(1), speedMetersPerSecond: 25));
+        trip.AddSample(new LocationSample(0.09, 0, T0.AddHours(1), speedMetersPerSecond: 25));
 
         Assert.Equal(90, trip.MaximumSpeedKmh, 6);
         Assert.InRange(trip.AverageSpeedKmh(T0.AddHours(1)), 9.9, 10.1);

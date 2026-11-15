@@ -3,6 +3,9 @@ namespace MYG.RideR.Core.Domain;
 public sealed class Trip
 {
     private const double MetersPerSecondToKmh = 3.6;
+    private const int SpeedWindow = 3;
+
+    private readonly Queue<double> _recentSpeeds = new();
 
     private Trip(Guid id, DateTimeOffset startedAt)
     {
@@ -53,8 +56,20 @@ public sealed class Trip
 
         Route.Add(sample);
 
-        if (sample.SpeedMetersPerSecond is { } speed)
-            MaximumSpeedKmh = Math.Max(MaximumSpeedKmh, speed * MetersPerSecondToKmh);
+        if (sample.SpeedMetersPerSecond is { } speed
+            && (sample.AccuracyMeters is not { } acc || acc <= TrackingThresholds.MaxAccuracyMeters)
+            && speed <= TrackingThresholds.MaxPlausibleSpeedMps)
+        {
+            _recentSpeeds.Enqueue(speed);
+            if (_recentSpeeds.Count > SpeedWindow)
+                _recentSpeeds.Dequeue();
+
+            if (_recentSpeeds.Count == SpeedWindow)
+            {
+                var median = _recentSpeeds.Order().ElementAt(SpeedWindow / 2);
+                MaximumSpeedKmh = Math.Max(MaximumSpeedKmh, median * MetersPerSecondToKmh);
+            }
+        }
     }
 
     public void Complete(DateTimeOffset endedAt)
