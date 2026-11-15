@@ -103,6 +103,7 @@ Sorun: `ListAsync` her sürüşün tüm örneklerini yüklüyor (1 saat ≈ 3600
 - `src/MYG.RideR.Application/MYG.RideR.Application.csproj`: kullanılmayan `CommunityToolkit.Mvvm` referansını kaldır.
 - `README.md`: "dashboard currently uses mock data…" durum notunu güncelle (gerçek GPS, SQLite, Mapsui var; arka plan kayıt yok).
 - `Platforms/Android/AndroidManifest.xml`: `android:allowBackup="false"` (konum geçmişi bulut yedeğine gitmesin).
+- `SqliteTripRepository` sample insert (satır ~153): `AppendSamplesAsync` için `INSERT OR IGNORE INTO Samples` kullan. Neden: append DB'de commit olup istisna sonradan gelirse (iptal vb.) aynı `Seq` tekrar denenir, PK ihlali yüzünden sürüş bir daha kaydedilemez. `SaveAsync` önce siler, onu değiştirme. Test: aynı `firstSeq` ile iki kez append → hata yok, örnek sayısı değişmez.
 - `MYG.RideR.Mobile.csproj`: `MauiIcon`/`MauiSplashScreen` `Color="#512BD4"` → tema arka plan rengi (`Themes/Colors.xaml` içindeki ana koyu renk).
 
 ## Notlar
