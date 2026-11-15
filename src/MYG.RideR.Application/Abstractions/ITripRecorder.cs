@@ -1,3 +1,4 @@
+using MYG.RideR.Application.Trips;
 using MYG.RideR.Core.Domain;
 
 namespace MYG.RideR.Application.Abstractions;
@@ -5,6 +6,9 @@ namespace MYG.RideR.Application.Abstractions;
 public interface ITripRecorder
 {
     Trip? CurrentTrip { get; }
+
+    /// <summary>Thread-safe snapshot of the current trip; null when there is no trip.</summary>
+    TripSummary? GetCurrentSummary(DateTimeOffset now);
 
     Task<Trip> StartAsync(CancellationToken cancellationToken = default);
 

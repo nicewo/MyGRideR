@@ -110,6 +110,28 @@ public sealed class TripRecorderTests
     }
 
     [Fact]
+    public void GetCurrentSummary_WithoutTrip_ReturnsNull()
+    {
+        var (recorder, _, _, time) = Create();
+
+        Assert.Null(recorder.GetCurrentSummary(time.Now));
+    }
+
+    [Fact]
+    public async Task GetCurrentSummary_MatchesTripSummaryFrom()
+    {
+        var (recorder, location, _, time) = Create();
+        var trip = await recorder.StartAsync();
+        location.Raise(new LocationSample(0, 0, time.Now));
+        location.Raise(new LocationSample(0.01, 0, time.Now.AddMinutes(1)));
+        var now = time.Now.AddMinutes(2);
+
+        var summary = recorder.GetCurrentSummary(now);
+
+        Assert.Equal(TripSummary.From(trip, now), summary);
+    }
+
+    [Fact]
     public async Task OutOfOrderSample_IsIgnored()
     {
         var (recorder, location, _, time) = Create();

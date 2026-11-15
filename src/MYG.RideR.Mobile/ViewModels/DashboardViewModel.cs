@@ -183,7 +183,10 @@ public partial class DashboardViewModel : ObservableObject
             return;
         }
 
-        var summary = TripSummary.From(trip, _timeProvider.GetUtcNow());
+        var summary = _tripRecorder.GetCurrentSummary(_timeProvider.GetUtcNow());
+        if (summary is null)
+            return;
+
         SpeedKmh = (int)Math.Round(summary.CurrentSpeedKmh);
         DistanceKm = Math.Round(summary.DistanceKm, 2);
         AverageSpeedKmh = (int)Math.Round(summary.AverageSpeedKmh);

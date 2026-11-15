@@ -23,6 +23,14 @@ public sealed class TripRecorder : ITripRecorder
 
     public Trip? CurrentTrip { get; private set; }
 
+    public TripSummary? GetCurrentSummary(DateTimeOffset now)
+    {
+        lock (_gate)
+        {
+            return CurrentTrip is { } t ? TripSummary.From(t, now) : null;
+        }
+    }
+
     public async Task<Trip> StartAsync(CancellationToken cancellationToken = default)
     {
         if (CurrentTrip is { Status: TripStatus.Recording })
