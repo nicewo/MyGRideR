@@ -45,6 +45,25 @@
 
             </Border>
 
+            <!--  Sol Alt Koordinat Çipi  -->
+
+            <Border
+                Margin="12"
+                Padding="10,6"
+                BackgroundColor="{StaticResource PanelOverlay}"
+                HorizontalOptions="Start"
+                StrokeShape="RoundRectangle 12"
+                StrokeThickness="0"
+                VerticalOptions="End">
+
+                <Label
+                    x:Name="CoordinateLabel"
+                    FontSize="11"
+                    Text="--"
+                    TextColor="White" />
+
+            </Border>
+
             <!--  Sağ Alt Konum  -->
 
             <VerticalStackLayout

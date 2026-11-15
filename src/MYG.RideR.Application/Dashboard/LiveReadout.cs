@@ -40,4 +40,18 @@ public static class LiveReadout
         <= FairAccuracyMeters => Dashboard.GpsQuality.Fair,
         _ => Dashboard.GpsQuality.Poor
     };
+
+    public static string CoordinateText(double latitude, double longitude) =>
+        string.Create(CultureInfo.InvariantCulture,
+            $"{Dms(latitude, latitude < 0 ? 'S' : 'N')}, {Dms(longitude, longitude < 0 ? 'W' : 'E')}");
+
+    private static string Dms(double value, char hemisphere)
+    {
+        // Tenths of arc-seconds so rounding carries into minutes/degrees correctly.
+        var tenths = (long)Math.Round(Math.Abs(value) * 36000, MidpointRounding.AwayFromZero);
+        var degrees = tenths / 36000;
+        var minutes = tenths % 36000 / 600;
+        var seconds = tenths % 600 / 10.0;
+        return string.Create(CultureInfo.InvariantCulture, $"{degrees}°{minutes:00}'{seconds:00.0}\"{hemisphere}");
+    }
 }

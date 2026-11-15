@@ -25,7 +25,7 @@ Durum: `bekliyor` / `sürüyor` / `bitti`. Görev bitip build+test geçince sorm
 | 13 | Android release imzalama altyapısı (sır repoda yok) + docs/Release.md | bitti | basit-duzeltici | build 0 hata (Android dahil, MYG_KEYSTORE tanımsız), 129 test geçti; imzalı publish denenmedi (keystore yok) |
 | 14 | Dashboard sadeleştirme: kesilen gösterge, boş yan kartlar, sahte yakıt/vites, 2x2 sürüş istatistiği | bitti | kod-yazici | build 0 hata (Android dahil), 142 test geçti; görsel kontrol cihazda (#1) |
 | 15 | Üst durum çubuğu: GPS kalite + uydu + doğruluk tek satır, logo; hata mesajları toast'a | bitti | kod-yazici | build 0 hata, 142 test geçti; görsel kontrol cihazda (#1) |
-| 16 | Koyu harita + canlı konum işaretçisi + rota çizgisi + koordinat çipi | bekliyor | kod-yazici | - |
+| 16 | Koyu harita + canlı konum işaretçisi + rota çizgisi + koordinat çipi | bitti | kod-yazici | build 0 hata (Android dahil), 146 test geçti; görsel kontrol cihazda (#1). Not: BruTile `HttpTileSource` imzasında `userAgent` parametresi yok, UA özel verilmedi (cihazda CARTO tile'ları yükleniyor mu kontrol et) |
 | 17 | Toplam kilometre sayacı (tüm sürüşler) | bekliyor | kod-yazici + test-yazici | - |
 | 18 | Araç modu (yaya/bisiklet/motor/araba) → gösterge ölçeği | bekliyor | kod-yazici + test-yazici | - |
 

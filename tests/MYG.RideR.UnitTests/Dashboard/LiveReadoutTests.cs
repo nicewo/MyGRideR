@@ -44,4 +44,14 @@ public sealed class LiveReadoutTests
     {
         Assert.Equal(expected, LiveReadout.GpsQuality(accuracy));
     }
+
+    [Theory]
+    [InlineData(39.426139, 29.995139, "39°25'34.1\"N, 29°59'42.5\"E")]
+    [InlineData(-33.5, -70.25, "33°30'00.0\"S, 70°15'00.0\"W")]
+    [InlineData(0, 0, "0°00'00.0\"N, 0°00'00.0\"E")]
+    [InlineData(10.99999999, 20, "11°00'00.0\"N, 20°00'00.0\"E")]
+    public void CoordinateText_FormatsDegreesMinutesSeconds(double lat, double lon, string expected)
+    {
+        Assert.Equal(expected, LiveReadout.CoordinateText(lat, lon));
+    }
 }

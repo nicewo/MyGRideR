@@ -51,6 +51,9 @@ public partial class DashboardViewModel : ObservableObject
     public partial string HeadingText { get; private set; } = "--";
 
     [ObservableProperty]
+    public partial string CoordinateText { get; private set; } = "--";
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(GpsSummaryText))]
     public partial string AccuracyText { get; private set; } = "±--";
 
@@ -300,8 +303,15 @@ public partial class DashboardViewModel : ObservableObject
         MainThread.BeginInvokeOnMainThread(() => ApplyLive(sample));
     }
 
+    /// <summary>Raised on the main thread for every live sample: latitude, longitude, course (deg, nullable).</summary>
+    public event Action<double, double, double?>? PositionChanged;
+
+    public IReadOnlyList<(double Lat, double Lon)> GetCurrentRoutePoints() => _tripRecorder.GetCurrentRoutePoints();
+
     private void ApplyLive(LocationSample sample)
     {
+        CoordinateText = LiveReadout.CoordinateText(sample.Latitude, sample.Longitude);
+
         if (sample.AltitudeMeters is { } altitude)
         {
             AltitudeM = (int)Math.Round(altitude);
@@ -316,6 +326,7 @@ public partial class DashboardViewModel : ObservableObject
         HeadingText = LiveReadout.HeadingText(_lastCourse);
         AccuracyText = LiveReadout.AccuracyText(sample.AccuracyMeters);
         ApplyQuality(LiveReadout.GpsQuality(sample.AccuracyMeters));
+        PositionChanged?.Invoke(sample.Latitude, sample.Longitude, _lastCourse);
         Refresh();
     }
 

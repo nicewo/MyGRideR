@@ -42,6 +42,16 @@ public sealed class TripRecorder : ITripRecorder
         }
     }
 
+    public IReadOnlyList<(double Lat, double Lon)> GetCurrentRoutePoints()
+    {
+        lock (_gate)
+        {
+            return CurrentTrip is { } t
+                ? t.Route.Samples.Select(x => (x.Latitude, x.Longitude)).ToArray()
+                : [];
+        }
+    }
+
     public async Task<Trip> StartAsync(CancellationToken cancellationToken = default)
     {
         if (CurrentTrip is { Status: TripStatus.Recording })

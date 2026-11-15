@@ -142,7 +142,7 @@
                 </Grid>
 
                 <!--  Harita  -->
-                <controls:MapPanel HeightRequest="260" />
+                <controls:MapPanel x:Name="MapView" HeightRequest="260" />
 
                 <!--  Rakım + yön  -->
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="10">

@@ -8,6 +8,7 @@ public partial class DashboardPage : ContentPage
     private readonly DashboardViewModel _viewModel;
     private readonly IErrorReporter _errorReporter;
     private static bool _reportPrompted;
+    private IDispatcherTimer? _routeTimer;
 
     public DashboardPage(DashboardViewModel viewModel, IErrorReporter errorReporter)
     {
@@ -21,6 +22,9 @@ public partial class DashboardPage : ContentPage
     {
         base.OnAppearing();
         _viewModel.StartClock();
+        _viewModel.PositionChanged -= ViewModel_PositionChanged;
+        _viewModel.PositionChanged += ViewModel_PositionChanged;
+        StartRouteTimer();
 
         try
         {
@@ -32,6 +36,22 @@ public partial class DashboardPage : ContentPage
         {
             System.Diagnostics.Debug.WriteLine($"Dashboard initialization failed: {ex}");
         }
+    }
+
+    private void ViewModel_PositionChanged(double lat, double lon, double? course) =>
+        MapView.UpdatePosition(lat, lon, course);
+
+    private void StartRouteTimer()
+    {
+        if (_routeTimer is null)
+        {
+            _routeTimer = Dispatcher.CreateTimer();
+            _routeTimer.Interval = TimeSpan.FromSeconds(5);
+            _routeTimer.Tick += (_, _) =>
+                MapView.SetRoute(_viewModel.IsRecording ? _viewModel.GetCurrentRoutePoints() : []);
+        }
+
+        _routeTimer.Start();
     }
 
     private async Task OfferErrorReportAsync()
@@ -47,6 +67,8 @@ public partial class DashboardPage : ContentPage
     protected override async void OnDisappearing()
     {
         _viewModel.StopClock();
+        _viewModel.PositionChanged -= ViewModel_PositionChanged;
+        _routeTimer?.Stop();
         base.OnDisappearing();
 
         try
