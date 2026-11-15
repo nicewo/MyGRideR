@@ -38,6 +38,16 @@
 
   </PropertyGroup>
 
+  <!-- Release imzalama: anahtar/şifreler repoda yok, ortam değişkenlerinden okunur (docs/Release.md). Değişken yoksa imzasız devam eder. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' and '$(MYG_KEYSTORE)' != ''">
+    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidSigningKeyStore>$(MYG_KEYSTORE)</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>$(MYG_KEY_ALIAS)</AndroidSigningKeyAlias>
+    <AndroidSigningStorePass>env:MYG_STORE_PASS</AndroidSigningStorePass>
+    <AndroidSigningKeyPass>env:MYG_KEY_PASS</AndroidSigningKeyPass>
+    <AndroidPackageFormat>aab</AndroidPackageFormat>
+  </PropertyGroup>
+
   <ItemGroup>
 
     <MauiIcon Include="Resources\AppIcon\appicon.svg"
