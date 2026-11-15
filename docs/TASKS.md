@@ -12,7 +12,7 @@ Durum: `bekliyor` / `sürüyor` / `bitti`. Görev bitip build+test geçince sorm
 | 2 | Android foreground service: ekran kapalıyken kayıt (type `location`, `ACCESS_BACKGROUND_LOCATION`, `FOREGROUND_SERVICE_LOCATION`, kalıcı bildirim; `ILocationService` arkasında) | bekliyor (Opus planı gerekli, 9 sonrası) | Opus plan -> kod-yazici -> test-yazici | - |
 | 3 | Küçük bilinen sorunlar (liste aşağıda; cihaz doğrulamasında çıkanlar da buraya) | bekliyor | basit-duzeltici | - |
 | 4 | Faz 5: telemetri, diagnostik, crash reporting, release signing, CI | bekliyor | Opus plan -> kod-yazici | - |
-| 5 | Durdurma hatasına dayanıklılık (TripRecorder.StopAsync idempotent + VM hata yakalama) | bekliyor | kod-yazici + test-yazici | - |
+| 5 | Durdurma hatasına dayanıklılık (TripRecorder.StopAsync idempotent + VM hata yakalama) | bitti | kod-yazici + test-yazici | 96 test geçti, build 0 hata (kod commit 01e1d0a'da zaten vardı; doğrulandı) |
 | 6 | GPS örnek filtresi: mesafe jitter + max hız sıçraması | bekliyor | kod-yazici + test-yazici | - |
 | 7 | Thread-safe özet: UI, rota listesini kilitsiz okumasın | bekliyor | kod-yazici + test-yazici | - |
 | 8 | iOS / MacCatalyst konum izni metni (Info.plist) | bekliyor | basit-duzeltici | - |
