@@ -100,12 +100,111 @@ public sealed class TripRecorderTests
         public override DateTimeOffset GetUtcNow() => Now;
     }
 
+    private sealed class FakeKeepAlive : IRecordingKeepAlive
+    {
+        public int StartCalls { get; private set; }
+        public int StopCalls { get; private set; }
+        public bool FailStart { get; set; }
+
+        public Task StartAsync(CancellationToken ct = default)
+        {
+            StartCalls++;
+            if (FailStart)
+                throw new InvalidOperationException("keep-alive failed");
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken ct = default)
+        {
+            StopCalls++;
+            return Task.CompletedTask;
+        }
+    }
+
     private static (TripRecorder Recorder, FakeLocationService Location, FakeRepository Repo, FakeTimeProvider Time) Create()
+    {
+        var (recorder, location, repo, time, _) = CreateWithKeepAlive();
+        return (recorder, location, repo, time);
+    }
+
+    private static (TripRecorder Recorder, FakeLocationService Location, FakeRepository Repo, FakeTimeProvider Time, FakeKeepAlive KeepAlive) CreateWithKeepAlive()
     {
         var location = new FakeLocationService();
         var repo = new FakeRepository();
         var time = new FakeTimeProvider();
-        return (new TripRecorder(new LiveLocationFeed(location), repo, time), location, repo, time);
+        var keepAlive = new FakeKeepAlive();
+        return (new TripRecorder(new LiveLocationFeed(location), repo, time, keepAlive), location, repo, time, keepAlive);
+    }
+
+    [Fact]
+    public async Task KeepAlive_StartedOnceAfterStart()
+    {
+        var (recorder, _, _, _, keepAlive) = CreateWithKeepAlive();
+
+        await recorder.StartAsync();
+
+        Assert.Equal(1, keepAlive.StartCalls);
+        Assert.Equal(0, keepAlive.StopCalls);
+    }
+
+    [Fact]
+    public async Task KeepAlive_StoppedOnceAfterStop()
+    {
+        var (recorder, _, _, _, keepAlive) = CreateWithKeepAlive();
+        await recorder.StartAsync();
+
+        await recorder.StopAsync();
+
+        Assert.Equal(1, keepAlive.StopCalls);
+    }
+
+    [Fact]
+    public async Task KeepAlive_StartFailure_StillRecords()
+    {
+        var (recorder, _, _, _, keepAlive) = CreateWithKeepAlive();
+        keepAlive.FailStart = true;
+
+        var trip = await recorder.StartAsync();
+
+        Assert.Same(trip, recorder.CurrentTrip);
+        await recorder.StopAsync();
+        Assert.Equal(0, keepAlive.StopCalls);
+    }
+
+    [Fact]
+    public async Task KeepAlive_NotStarted_WhenAcquireFails()
+    {
+        var (recorder, location, _, _, keepAlive) = CreateWithKeepAlive();
+        location.StartResult = false;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => recorder.StartAsync());
+
+        Assert.Equal(0, keepAlive.StartCalls);
+    }
+
+    [Fact]
+    public async Task KeepAlive_NotStarted_WhenCreateFails()
+    {
+        var (recorder, _, repo, _, keepAlive) = CreateWithKeepAlive();
+        repo.FailNextCreate = true;
+
+        await Assert.ThrowsAsync<IOException>(() => recorder.StartAsync());
+
+        Assert.Equal(0, keepAlive.StartCalls);
+    }
+
+    [Fact]
+    public async Task KeepAlive_StoppedEvenWhenSaveFails_AndNotStoppedAgainOnRetry()
+    {
+        var (recorder, _, repo, _, keepAlive) = CreateWithKeepAlive();
+        await recorder.StartAsync();
+        repo.FailNextSave = true;
+
+        await Assert.ThrowsAsync<IOException>(() => recorder.StopAsync());
+        Assert.Equal(1, keepAlive.StopCalls);
+
+        await recorder.StopAsync();
+        Assert.Equal(1, keepAlive.StopCalls);
     }
 
     [Fact]

@@ -40,4 +40,7 @@
 ## Phase 2 Notes: Android background execution
 
 - Current implementation (`MauiLocationService`) is foreground-only (`LocationWhenInUse`); tracking stops when the app is backgrounded.
-- For recording with the screen off, a later step adds an Android foreground service (type `location`), `ACCESS_BACKGROUND_LOCATION`, `FOREGROUND_SERVICE_LOCATION` and a persistent notification. It must stay behind `ILocationService`.
+- Screen-off recording (task 2): while a trip is recording, an Android foreground service (type `location`, persistent notification) keeps the process alive; it sits behind `IRecordingKeepAlive` (no-op on other platforms). `MauiLocationService` keeps doing the listening; the service reads no location itself.
+- The service is started while the app is in the foreground (START pressed), so while-in-use location permission is enough: `ACCESS_BACKGROUND_LOCATION` is deliberately NOT requested (no Play policy burden).
+- iOS background location is a separate piece of work and out of scope.
+- Risk for device testing: if MAUI `StartListeningForegroundAsync` stops updates in the background, move listening into the service via FusedLocation.

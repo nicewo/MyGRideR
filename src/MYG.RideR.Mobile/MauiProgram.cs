@@ -40,6 +40,11 @@ public static class MauiProgram
             .AddTransient<SettingsPage>()
             .AddSingleton<IClockService, ClockService>()
             .AddSingleton<ILocationService, MauiLocationService>();
+#if ANDROID
+        builder.Services.AddSingleton<IRecordingKeepAlive, MYG.RideR.Mobile.Platforms.Android.Services.AndroidRecordingKeepAlive>();
+#else
+        builder.Services.AddSingleton<IRecordingKeepAlive, NoOpRecordingKeepAlive>();
+#endif
 #if DEBUG
         builder.Logging.AddDebug();
 #endif

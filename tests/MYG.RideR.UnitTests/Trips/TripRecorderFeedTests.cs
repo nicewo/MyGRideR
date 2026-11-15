@@ -78,6 +78,12 @@ public sealed class TripRecorderFeedTests
             => Task.FromResult<IReadOnlyList<TripHeader>>([]);
     }
 
+    private sealed class NoOpKeepAlive : IRecordingKeepAlive
+    {
+        public Task StartAsync(CancellationToken ct = default) => Task.CompletedTask;
+        public Task StopAsync(CancellationToken ct = default) => Task.CompletedTask;
+    }
+
     private sealed class FixedTimeProvider : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => T0;
@@ -87,7 +93,7 @@ public sealed class TripRecorderFeedTests
     {
         var feed = new FakeFeed();
         var repo = new FakeRepository();
-        return (new TripRecorder(feed, repo, new FixedTimeProvider()), feed, repo);
+        return (new TripRecorder(feed, repo, new FixedTimeProvider(), new NoOpKeepAlive()), feed, repo);
     }
 
     [Fact]

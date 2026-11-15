@@ -9,7 +9,7 @@ Durum: `bekliyor` / `sürüyor` / `bitti`. Görev bitip build+test geçince sorm
 |---|---|---|---|---|
 | 0 | Canlı konum akışı (ILiveLocationFeed, dashboard canlı alanlar, irtifa/yön persist) | bitti | kod-yazici + test-yazici | 93 test geçti, commit 789339e push edildi |
 | 1 | Cihazda doğrulama: ±m/GPS badge, kayıt başlat/durdur, sayfa değişince kayıt sürmesi, irtifa/yön/duruş süresi, kırmızı ışıkta mesafe artmaması (5 sonrası) | ertelendi (en son, kullanıcı) | kullanıcı (cihaz) | - |
-| 2 | Android: ekran kapalıyken kayıt (location foreground service + kalıcı bildirim, `IRecordingKeepAlive` arkasında) | bekliyor | kod-yazici + test-yazici | - |
+| 2 | Android: ekran kapalıyken kayıt (location foreground service + kalıcı bildirim, `IRecordingKeepAlive` arkasında) | bitti | kod-yazici + test-yazici | build 0 hata (Android dahil), 125 test geçti; cihazda doğrulanmadı (#1) |
 | 3 | Küçük bilinen sorunlar (liste aşağıda; cihaz doğrulamasında çıkanlar da buraya) | bitti | basit-duzeltici | build 0 hata, 119 test geçti (BAŞLAT zaten düzgündü) |
 | 4 | Faz 5 → 11, 12, 13'e bölündü. Telemetri ve 3. parti crash servisi kapsam dışı (hesap/anahtar ve gizlilik kararı kullanıcının) | bölündü | - | - |
 | 5 | Durdurma hatasına dayanıklılık (TripRecorder.StopAsync idempotent + VM hata yakalama) | bitti | kod-yazici + test-yazici | 96 test geçti, build 0 hata (kod commit 01e1d0a'da zaten vardı; doğrulandı) |

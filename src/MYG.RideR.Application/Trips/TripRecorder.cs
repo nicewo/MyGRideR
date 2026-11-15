@@ -13,7 +13,9 @@ public sealed class TripRecorder : ITripRecorder
     private readonly TimeProvider _timeProvider;
     private readonly object _gate = new();
     private readonly SemaphoreSlim _flushGate = new(1, 1);
+    private readonly IRecordingKeepAlive _keepAlive;
     private bool _feedHeld;
+    private bool _keepAliveOn;
     private bool _created;
     private int _persistedCount;
     private DateTimeOffset _lastFlushAt;
@@ -21,8 +23,10 @@ public sealed class TripRecorder : ITripRecorder
     public TripRecorder(
         ILiveLocationFeed liveFeed,
         ITripRepository repository,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IRecordingKeepAlive keepAlive)
     {
+        _keepAlive = keepAlive;
         _liveFeed = liveFeed;
         _repository = repository;
         _timeProvider = timeProvider;
@@ -104,6 +108,17 @@ public sealed class TripRecorder : ITripRecorder
             _created = true;
         }
 
+        try
+        {
+            await _keepAlive.StartAsync(CancellationToken.None);
+            _keepAliveOn = true;
+        }
+        catch (Exception ex)
+        {
+            // Recording continues without the foreground service.
+            System.Diagnostics.Debug.WriteLine(ex);
+        }
+
         return trip;
     }
 
@@ -116,6 +131,19 @@ public sealed class TripRecorder : ITripRecorder
             _liveFeed.SampleReceived -= OnLocationChanged;
             await _liveFeed.ReleaseAsync(cancellationToken);
             _feedHeld = false;
+        }
+
+        if (_keepAliveOn)
+        {
+            _keepAliveOn = false;
+            try
+            {
+                await _keepAlive.StopAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
         }
 
         lock (_gate)
