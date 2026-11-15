@@ -24,6 +24,10 @@ Hedef: en az token ile doğru sonuç. Her iş en ucuz yeterli katmana verilir.
 - Her görev bitince build+test geçtiyse kullanıcıya sormadan commit at ve push et. Build/test kırıksa commit yok, sorunu raporla.
 - Gerçek harcama yalnızca `/cost` ile görülür. Her kilometre taşında (faz bitişi, büyük refactor, commit öncesi) kullanıcıya `/cost` çalıştırmasını hatırlat.
 
+## Proje skill'leri
+- `dogrula`: build+test, sadece hata/özet çıktısı.
+- `gorev-calistir`: TASKS.md'deki sıradaki görevi uygula → doğrula → commit+push.
+
 ## Doğrulama
 - `dotnet build MYG.RideR.sln --nologo -v q`
 - `dotnet test tests/MYG.RideR.UnitTests --nologo -v q`
