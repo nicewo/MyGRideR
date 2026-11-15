@@ -15,7 +15,9 @@ jobs:
           global-json-file: global.json
       - run: dotnet test tests/MYG.RideR.UnitTests --nologo -v q
 
+  # PR: imzasız Android build (derleniyor mu kontrolü).
   android:
+    if: github.event_name == 'pull_request'
     runs-on: windows-latest
     needs: test
     steps:
@@ -25,3 +27,50 @@ jobs:
           global-json-file: global.json
       - run: dotnet workload restore src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj
       - run: dotnet build src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj -f net10.0-android -c Release --nologo -v q
+
+  # main: imzalı APK -> GitHub Release "build-<run_number>". Uygulama içi güncelleyici bunu okur.
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    needs: test
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet workload restore src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj
+
+      - name: Keystore
+        shell: pwsh
+        env:
+          KS_B64: ${{ secrets.MYG_KEYSTORE_B64 }}
+        run: |
+          if (-not $env:KS_B64) { throw "MYG_KEYSTORE_B64 secret tanımlı değil (docs/Release.md)." }
+          $path = Join-Path $env:RUNNER_TEMP "myg-rider.keystore"
+          [IO.File]::WriteAllBytes($path, [Convert]::FromBase64String($env:KS_B64))
+          "MYG_KEYSTORE=$path" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Publish signed APK
+        shell: pwsh
+        env:
+          MYG_KEY_ALIAS: ${{ secrets.MYG_KEY_ALIAS }}
+          MYG_STORE_PASS: ${{ secrets.MYG_STORE_PASS }}
+          MYG_KEY_PASS: ${{ secrets.MYG_KEY_PASS }}
+        run: |
+          $n = "${{ github.run_number }}"
+          dotnet publish src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj -f net10.0-android -c Release `
+            -p:AndroidPackageFormat=apk -p:ApplicationVersion=$n -p:ApplicationDisplayVersion=1.0.$n `
+            -o out --nologo -v q
+          $apk = Get-ChildItem out -Filter *-Signed.apk | Select-Object -First 1
+          if (-not $apk) { throw "İmzalı APK bulunamadı." }
+          Copy-Item $apk.FullName myg-rider.apk
+
+      - name: GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $n = "${{ github.run_number }}"
+          gh release create "build-$n" myg-rider.apk --title "MYG RideR 1.0.$n" --notes "Otomatik build $n (${{ github.sha }})" --latest
