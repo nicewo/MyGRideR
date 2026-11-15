@@ -75,7 +75,7 @@ public partial class DashboardViewModel : ObservableObject
     public partial bool IsRecording { get; private set; }
 
     [ObservableProperty]
-    public partial string RecordButtonText { get; private set; } = "BAŞLA";
+    public partial string RecordButtonText { get; private set; } = "BAŞLAT";
 
     [ObservableProperty]
     public partial bool IsBusy { get; private set; }
@@ -149,9 +149,12 @@ public partial class DashboardViewModel : ObservableObject
         }
         catch (InvalidOperationException ex)
         {
-            _recordingError = ex.Message;
-            _recordingErrorUntil = _timeProvider.GetUtcNow().AddSeconds(5);
-            GpsStatus = ex.Message;
+            ShowRecordingError(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+            ShowRecordingError("Kayıt kaydedilemedi, tekrar DURDUR'a bas");
         }
         finally
         {
@@ -160,11 +163,18 @@ public partial class DashboardViewModel : ObservableObject
         }
     }
 
+    private void ShowRecordingError(string message)
+    {
+        _recordingError = message;
+        _recordingErrorUntil = _timeProvider.GetUtcNow().AddSeconds(5);
+        GpsStatus = message;
+    }
+
     private void Refresh()
     {
         var trip = _tripRecorder.CurrentTrip;
         IsRecording = trip is not null;
-        RecordButtonText = IsRecording ? "DURDUR" : "BAŞLAT";
+        RecordButtonText = trip?.Status == TripStatus.Completed ? "KAYDET" : IsRecording ? "DURDUR" : "BAŞLAT";
 
         if (trip is null)
         {

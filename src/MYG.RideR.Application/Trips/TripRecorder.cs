@@ -9,6 +9,7 @@ public sealed class TripRecorder : ITripRecorder
     private readonly ITripRepository _repository;
     private readonly TimeProvider _timeProvider;
     private readonly object _gate = new();
+    private bool _feedHeld;
 
     public TripRecorder(
         ILiveLocationFeed liveFeed,
@@ -26,6 +27,8 @@ public sealed class TripRecorder : ITripRecorder
     {
         if (CurrentTrip is { Status: TripStatus.Recording })
             throw new InvalidOperationException("A trip is already being recorded.");
+        if (CurrentTrip is { Status: TripStatus.Completed })
+            throw new InvalidOperationException("Önceki sürüş henüz kaydedilmedi.");
 
         var trip = Trip.Start(_timeProvider.GetUtcNow());
         CurrentTrip = trip;
@@ -50,6 +53,7 @@ public sealed class TripRecorder : ITripRecorder
             throw new InvalidOperationException("Location service could not be started.");
         }
 
+        _feedHeld = true;
         return trip;
     }
 
@@ -57,14 +61,20 @@ public sealed class TripRecorder : ITripRecorder
     {
         var trip = CurrentTrip ?? throw new InvalidOperationException("No trip is being recorded.");
 
-        _liveFeed.SampleReceived -= OnLocationChanged;
-        await _liveFeed.ReleaseAsync(cancellationToken);
+        if (_feedHeld)
+        {
+            _liveFeed.SampleReceived -= OnLocationChanged;
+            await _liveFeed.ReleaseAsync(cancellationToken);
+            _feedHeld = false;
+        }
 
         lock (_gate)
         {
-            trip.Complete(_timeProvider.GetUtcNow());
+            if (trip.Status == TripStatus.Recording)
+                trip.Complete(_timeProvider.GetUtcNow());
         }
 
+        // Save failure keeps the completed trip so the next Stop retries only the save.
         await _repository.SaveAsync(trip, cancellationToken);
         CurrentTrip = null;
         return trip;

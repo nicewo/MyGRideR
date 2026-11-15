@@ -31,6 +31,7 @@ public sealed class TripRecorderTests
     private sealed class FakeRepository : ITripRepository
     {
         public List<Trip> Saved { get; } = [];
+    public bool FailNextSave { get; set; }
 
         public Task SaveAsync(Trip trip, CancellationToken cancellationToken = default)
         {
