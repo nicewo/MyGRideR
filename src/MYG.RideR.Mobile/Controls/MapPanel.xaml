@@ -18,14 +18,6 @@
 
             <mapsui:MapControl x:Name="Map" BackgroundColor="{StaticResource MapBackground}" />
 
-            <Label
-                Margin="6,0,6,4"
-                FontSize="10"
-                HorizontalOptions="Start"
-                Text="© OpenStreetMap contributors"
-                TextColor="{StaticResource TextMutedAlt}"
-                VerticalOptions="End" />
-
             <!--  Üst Bilgi  -->
 
             <Border

@@ -9,6 +9,8 @@ public partial class MapPanel : ContentView
         InitializeComponent();
         // OSM tile policy: identifying User-Agent (set by CreateTileLayer) and visible attribution.
         Map.Map.Layers.Add(OpenStreetMap.CreateTileLayer("MYG-RideR/1.0"));
+        // North-up map: two-finger rotation turned labels upside down on the dashboard.
+        Map.Map.Navigator.RotationLock = true;
     }
 
     private async void LocateClicked(object? sender, EventArgs e)

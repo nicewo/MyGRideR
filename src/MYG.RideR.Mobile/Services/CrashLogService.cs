@@ -32,6 +32,9 @@ public sealed class CrashLogService : ICrashLog
 #endif
     }
 
+    public void Record(Exception exception, string context) =>
+        Write(new InvalidOperationException($"[handled] {context}", exception));
+
     public Task<string?> ReadAsync()
     {
         try

@@ -14,6 +14,7 @@ public partial class DashboardViewModel : ObservableObject
     private readonly IClockService _clockService;
     private readonly ILiveLocationFeed _liveFeed;
     private readonly TimeProvider _timeProvider;
+    private readonly ICrashLog _crashLog;
     private bool _liveAcquired;
     private double? _lastCourse;
     private readonly SemaphoreSlim _liveGate = new(1, 1);
@@ -85,8 +86,10 @@ public partial class DashboardViewModel : ObservableObject
         ITripRecorder tripRecorder,
         IClockService clockService,
         ILiveLocationFeed liveFeed,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        ICrashLog crashLog)
     {
+        _crashLog = crashLog;
         _liveFeed = liveFeed;
         _tripRecorder = tripRecorder;
         _clockService = clockService;
@@ -137,6 +140,7 @@ public partial class DashboardViewModel : ObservableObject
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine(ex);
+            _crashLog.Record(ex, "Recover unfinished trips");
         }
     }
 
@@ -148,11 +152,12 @@ public partial class DashboardViewModel : ObservableObject
             return;
         }
 
+        var starting = _tripRecorder.CurrentTrip is null;
         try
         {
             IsBusy = true;
             _recordingError = null;
-            if (_tripRecorder.CurrentTrip is null)
+            if (starting)
             {
                 await _tripRecorder.StartAsync();
             }
@@ -163,12 +168,16 @@ public partial class DashboardViewModel : ObservableObject
         }
         catch (InvalidOperationException ex)
         {
+            _crashLog.Record(ex, starting ? "Recording start" : "Recording stop");
             ShowRecordingError(ex.Message);
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine(ex);
-            ShowRecordingError("Kayıt kaydedilemedi, tekrar DURDUR'a bas");
+            _crashLog.Record(ex, starting ? "Recording start" : "Recording stop");
+            ShowRecordingError(starting
+                ? $"Kayıt başlatılamadı: {ex.Message}"
+                : "Kayıt kaydedilemedi, tekrar DURDUR'a bas");
         }
         finally
         {
