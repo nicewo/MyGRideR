@@ -1,5 +1,7 @@
 # MYG RideR
 
+![CI](https://github.com/nicewo/MyGRideR/actions/workflows/ci.yml/badge.svg)
+
 [![.NET MAUI](https://img.shields.io/badge/.NET%20MAUI-10.0-512BD4?logo=dotnet&logoColor=white)](https://learn.microsoft.com/dotnet/maui/)  
 [![C#](https://img.shields.io/badge/C%23-MVVM-239120?logo=csharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)  
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20Windows-blue)](#)

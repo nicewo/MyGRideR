@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet test tests/MYG.RideR.UnitTests --nologo -v q
+
+  android:
+    runs-on: windows-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet workload restore src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj
+      - run: dotnet build src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj -f net10.0-android -c Release --nologo -v q
