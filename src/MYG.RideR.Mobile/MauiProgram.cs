@@ -39,6 +39,7 @@ public static class MauiProgram
             .AddTransient<StatisticsPage>()
             .AddTransient<SettingsPage>()
             .AddSingleton<ICrashLog, CrashLogService>()
+            .AddSingleton<IErrorReporter, ErrorReportService>()
             .AddSingleton<IClockService, ClockService>()
             .AddSingleton<ILocationService, MauiLocationService>();
 #if ANDROID
