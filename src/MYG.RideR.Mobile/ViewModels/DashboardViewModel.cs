@@ -15,6 +15,7 @@ public partial class DashboardViewModel : ObservableObject
     private readonly ILiveLocationFeed _liveFeed;
     private readonly TimeProvider _timeProvider;
     private readonly ICrashLog _crashLog;
+    private readonly IGnssStatusService _gnss;
     private bool _liveAcquired;
     private double? _lastCourse;
     private readonly SemaphoreSlim _liveGate = new(1, 1);
@@ -53,7 +54,7 @@ public partial class DashboardViewModel : ObservableObject
     public partial string AccuracyText { get; private set; } = "±--";
 
     [ObservableProperty]
-    public partial string SatelliteText { get; private set; } = "0/0";
+    public partial string SatelliteText { get; private set; } = "--";
 
     [ObservableProperty]
     public partial string BatteryText { get; private set; } = "%--";
@@ -87,8 +88,10 @@ public partial class DashboardViewModel : ObservableObject
         IClockService clockService,
         ILiveLocationFeed liveFeed,
         TimeProvider timeProvider,
-        ICrashLog crashLog)
+        ICrashLog crashLog,
+        IGnssStatusService gnss)
     {
+        _gnss = gnss;
         _crashLog = crashLog;
         _liveFeed = liveFeed;
         _tripRecorder = tripRecorder;
@@ -245,6 +248,9 @@ public partial class DashboardViewModel : ObservableObject
             if (acquired)
             {
                 _liveAcquired = true;
+                _gnss.StatusChanged -= Gnss_StatusChanged;
+                _gnss.StatusChanged += Gnss_StatusChanged;
+                _gnss.Start();
                 if (_liveFeed.LatestSample is { } latest)
                 {
                     ApplyLive(latest);
@@ -274,6 +280,9 @@ public partial class DashboardViewModel : ObservableObject
 
             _liveAcquired = false;
             _liveFeed.SampleReceived -= LiveFeed_SampleReceived;
+            _gnss.StatusChanged -= Gnss_StatusChanged;
+            _gnss.Stop();
+            SatelliteText = "--";
             await _liveFeed.ReleaseAsync();
         }
         finally
@@ -281,6 +290,10 @@ public partial class DashboardViewModel : ObservableObject
             _liveGate.Release();
         }
     }
+
+    // Shown as "used/visible", e.g. 8/14. Callback already arrives on the main thread.
+    private void Gnss_StatusChanged(int used, int visible) =>
+        SatelliteText = visible == 0 ? "--" : $"{used}/{visible}";
 
     private void LiveFeed_SampleReceived(LocationSample sample)
     {

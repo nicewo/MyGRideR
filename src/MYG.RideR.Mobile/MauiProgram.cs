@@ -47,6 +47,11 @@ public static class MauiProgram
 #else
         builder.Services.AddSingleton<IRecordingKeepAlive, NoOpRecordingKeepAlive>();
 #endif
+#if ANDROID
+        builder.Services.AddSingleton<IGnssStatusService, MYG.RideR.Mobile.Platforms.Android.Services.AndroidGnssStatusService>();
+#else
+        builder.Services.AddSingleton<IGnssStatusService, NoOpGnssStatusService>();
+#endif
 #if ANDROID && !DEBUG
         builder.Services.AddSingleton<IAppUpdater, MYG.RideR.Mobile.Platforms.Android.Services.AndroidAppUpdater>();
 #else
