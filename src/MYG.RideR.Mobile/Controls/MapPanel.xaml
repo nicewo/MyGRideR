@@ -20,30 +20,7 @@
 
             <!--  Üst Bilgi  -->
 
-            <Border
-                Margin="12"
-                Padding="12,8"
-                BackgroundColor="{StaticResource PanelOverlay}"
-                HorizontalOptions="Start"
-                StrokeShape="RoundRectangle 14"
-                StrokeThickness="0"
-                VerticalOptions="Start">
-
-                <HorizontalStackLayout Spacing="8">
-
-                    <Ellipse
-                        Fill="{StaticResource Success}"
-                        HeightRequest="10"
-                        WidthRequest="10" />
-
-                    <Label
-                        FontSize="13"
-                        Text="GPS Aktif"
-                        TextColor="White" />
-
-                </HorizontalStackLayout>
-
-            </Border>
+            
 
             <!--  Sol Alt Koordinat Çipi  -->
 

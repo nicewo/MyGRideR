@@ -141,21 +141,7 @@
                         VerticalOptions="Center" />
                 </HorizontalStackLayout>
 
-                <!--  GPS durumu  -->
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                    <Border
-                        Grid.Column="1"
-                        Padding="12,6"
-                        BackgroundColor="{StaticResource PanelBackground}"
-                        Stroke="{StaticResource Success}"
-                        StrokeShape="RoundRectangle 14">
-                        <Label
-                            FontAttributes="Bold"
-                            FontSize="11"
-                            Text="{Binding GpsStatus}"
-                            TextColor="{StaticResource Success}" />
-                    </Border>
-                </Grid>
+                
 
                 <!--  Harita  -->
                 <controls:MapPanel x:Name="MapView" HeightRequest="260" />
