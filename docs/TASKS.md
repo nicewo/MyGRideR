@@ -3,7 +3,9 @@
 Opus planlar ve görevleri buraya yazar; ucuz ajanlar uygular; her görevden sonra build+test çalışır ve sonuç buraya işlenir.
 Durum: `bekliyor` / `sürüyor` / `bitti`. Görev bitip build+test geçince sormadan commit + push. Kilometre taşında `/cost`.
 
-**Uygulama sırası:** 3 → 2 → 11 → 12 → 13 → 1 (cihaz, en sona ertelendi). 5–10 bitti.
+**Uygulama sırası (yeni):** 14 → 15 → 16 → 17 → 18. Referans: "Hız Göstergesi" uygulaması (Sayaç/Dijital/Harita sekmeleri, 4'lü istatistik, kilometre sayacı, koyu harita).
+
+**Eski sıra:** 3 → 2 → 11 → 12 → 13 → 1 (cihaz, en sona ertelendi). 5–10 bitti.
 
 | # | Görev | Durum | Ajan | Doğrulama |
 |---|---|---|---|---|
@@ -21,6 +23,11 @@ Durum: `bekliyor` / `sürüyor` / `bitti`. Görev bitip build+test geçince sorm
 | 11 | CI: GitHub Actions (birim testleri + Android build) | bitti | kod-yazici | build 0 hata, 125 test geçti; yerel OK, Actions sonucu kontrol edilecek |
 | 12 | Yerel çökme kaydı + Ayarlar'da paylaş/temizle | bitti | kod-yazici + test-yazici | build 0 hata (Android dahil), 129 test geçti; cihazda doğrulanmadı (#1) |
 | 13 | Android release imzalama altyapısı (sır repoda yok) + docs/Release.md | bitti | basit-duzeltici | build 0 hata (Android dahil, MYG_KEYSTORE tanımsız), 129 test geçti; imzalı publish denenmedi (keystore yok) |
+| 14 | Dashboard sadeleştirme: kesilen gösterge, boş yan kartlar, sahte yakıt/vites, 2x2 sürüş istatistiği | bekliyor | kod-yazici | - |
+| 15 | Üst durum çubuğu: GPS kalite + uydu + doğruluk tek satır, logo; hata mesajları toast'a | bekliyor | kod-yazici | - |
+| 16 | Koyu harita + canlı konum işaretçisi + rota çizgisi + koordinat çipi | bekliyor | kod-yazici | - |
+| 17 | Toplam kilometre sayacı (tüm sürüşler) | bekliyor | kod-yazici + test-yazici | - |
+| 18 | Araç modu (yaya/bisiklet/motor/araba) → gösterge ölçeği | bekliyor | kod-yazici + test-yazici | - |
 
 ## Görev detayları
 
@@ -160,6 +167,38 @@ Karar: anahtar ve şifreler **asla** repoya girmez; ortam değişkenlerinden oku
 - Yeni `docs/Release.md` (Türkçe, kısa): (1) `keytool -genkeypair -v -keystore myg-rider.keystore -alias myg-rider -keyalg RSA -keysize 2048 -validity 10000` — keystore'u repo dışında sakla, yedekle (kaybı = mağazada güncelleme yapamamak); (2) PowerShell'de `$env:MYG_KEYSTORE`, `$env:MYG_KEY_ALIAS`, `$env:MYG_STORE_PASS`, `$env:MYG_KEY_PASS` ayarla; (3) `dotnet publish src/MYG.RideR.Mobile/MYG.RideR.Mobile.csproj -f net10.0-android -c Release`; (4) çıktı `bin/Release/net10.0-android/publish/*.aab`; (5) sürüm artırma: `ApplicationDisplayVersion` ve `ApplicationVersion`.
 - Doğrulama: değişkenler tanımsızken normal build+test geçmeli.
 
+### 14 — Dashboard sadeleştirme
+Sorun (cihaz ekranı): hız göstergesinin üstü (100–140) üst çubuğun altında kesiliyor; sol/sağdaki 6 `StatCard` (Mesafe, Süre, Rakım, Ort, Maks, Duruş) boş hap olarak görünüyor, değerleri okunmuyor; `FuelRatio` (E/F) ve `Gear` (VİTES) gerçek veri değil.
+- `src/MYG.RideR.Mobile/Views/DashboardPage.xaml`: yan `StatCard` sütunlarını ve yakıt çubuğunu (E/F, `FuelRatio`) kaldır. `SpeedGauge`'a `Gear` bağlamasını ve VİTES kutusunu kaldır (`Controls/SpeedGauge.xaml(.cs)` içinde de VİTES bölümünü sil).
+- Göstergeyi tam genişlik ortala, `HeightRequest` ile tamamı görünecek şekilde yerleştir (üst çubuğun altında kesilmesin; gerekirse `Margin` üst 8).
+- Göstergenin altına 2x2 `Grid`: Süre (`TripTime`), Mesafe (`DistanceKm` "0.00 km"), Ort. hız (`AverageSpeedKmh` km/h), Azami hız (`MaximumSpeedKmh` km/h). Büyük rakam (FontSize 28, Bold, `TextPrimary`), küçük başlık (`CaptionLabel`). Duruş süresi (`StopTime`) Süre'nin altında küçük satır.
+- Alttaki 3 kartı (HIZ GRAFİĞİ / TOPLAM MESAFE / RAKIM) tek satır küçük bilgiye indir: sadece Rakım (`AltitudeM` m) ve Yön (`HeadingText`). Hız ve mesafe yukarıda zaten var.
+- `DashboardViewModel`: `Gear`, `FuelRatio` özelliklerini sil (başka yerde kullanılmıyorsa). `RecordButtonText` sığmıyor ("BAŞLA" görünüyor): `BottomToolbar.xaml` kayıt butonunda `FontSize` 14 ve `LineBreakMode="NoWrap"`.
+- Doğrulama: build+test. Görsel kontrol cihazda (#1).
+
+### 15 — Üst durum çubuğu + toast
+- `Controls/TopStatusBar.xaml(.cs)`: kırmızı motor ikonunu `mygrider_logo.png` (32x32) ile değiştir. Orta hap: `GPS iyi · 8/14 · ±6m` biçimi — `DashboardViewModel` yeni `GpsSummaryText` özelliği: `GpsStatus` kalite metni + `SatelliteText` + `AccuracyText`, araya " · ". Hap rengi kaliteye göre (Good=`Success`, Fair/Poor=`Warning`, NoFix=`Danger`) → `GpsQualityColor` özelliği.
+- Hata/bilgi mesajları GPS hapına yazılmasın: `ShowRecordingError` → `CommunityToolkit.Maui.Alerts.Toast.Make(message, ToastDuration.Long).Show()` (MainThread'de). `_recordingError`/`_recordingErrorUntil` mantığını kaldır; `ApplyQuality` sadece kaliteyi yazar.
+- Doğrulama: build+test.
+
+### 16 — Koyu harita + canlı konum
+- `Controls/MapPanel.xaml.cs`: OSM tile yerine koyu katman: `new TileLayer(new HttpTileSource(new GlobalSphericalMercator(), "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png", name: "CARTO Dark", attribution: new Attribution("© OpenStreetMap contributors © CARTO"), userAgent: "MYG-RideR/1.0"))` (Mapsui 5 API adlarına uy; derlenmezse BruTile `HttpTileSource` imzasına göre düzelt). Atıf görünür kalmalı.
+- `MapPanel`'e `UpdatePosition(double lat, double lon, double? courseDeg)` ve `SetRoute(IReadOnlyList<(double Lat,double Lon)>)` ekle: `MemoryLayer` ile konum noktası (NeonBlue daire, 10px) ve rota çizgisi (`LineString`, turuncu #FF8A00, 4px). İlk konumda `CenterOnAndZoomTo(resolution 4)`, sonra sadece "takip" açıkken ortala; kullanıcı haritayı kaydırınca takip kapanır, konum butonu açar.
+- Konum butonu `Geolocation.GetLocationAsync` yerine son canlı örneği kullanır.
+- `DashboardPage.xaml.cs`: VM'den `PositionChanged` olayı (lat, lon, course) ve kayıt sürerken rota noktaları (her 5 sn'de `GetCurrentRoutePoints()` → `ITripRecorder` lock altında kopya) → MapPanel.
+- Sol alta koordinat çipi (`39°25'34.1"N, 29°59'42.5"E` biçimi, `Application/Dashboard/LiveReadout.CoordinateText(lat, lon)` + birim testi).
+- Doğrulama: build+test.
+
+### 17 — Toplam kilometre sayacı
+- `Application/Trips/TripStatistics` zaten toplam mesafe veriyor. `DashboardViewModel.InitializeAsync` ve her `StopAsync` sonrası `ITripRepository.ListHeadersAsync` → `TotalDistanceKm` → `OdometerText` ("000026 km", 6 hane, sıfır dolgulu, tam km).
+- Dashboard'da 2x2 bloğun altında küçük "Kilometre sayacı" satırı.
+- Test: `LiveReadout.OdometerText(26.4)` → "000026".
+
+### 18 — Araç modu
+- `Application/Dashboard/VehicleMode.cs`: `enum VehicleMode { Walk, Bicycle, Motorcycle, Car }` + `MaxGaugeKmh(mode)`: 20 / 60 / 240 / 240.
+- Ayarlar'da 4 butonluk seçim; `Preferences` "vehicle_mode" (varsayılan Motorcycle). `SpeedGauge`'a `MaxValue` bindable property; ölçek ve etiketler bu değere göre çizilir (`GaugeDrawable`).
+- Test: `MaxGaugeKmh` değerleri.
+
 ### 3 — Küçük bilinen sorunlar
 - `DashboardViewModel`: `RecordButtonText` başlangıç değeri `"BAŞLA"` → `"BAŞLAT"`.
 - `DashboardViewModel.Refresh`: trip yokken `DistanceKm`, `AverageSpeedKmh`, `MaximumSpeedKmh`, `TripTime`, `StopTime` son sürüşün değerinde kalıyor — bilinçli karar: **kalsın** (son sürüş özeti olarak görünür), değişiklik yok.
@@ -170,6 +209,7 @@ Karar: anahtar ve şifreler **asla** repoya girmez; ortam değişkenlerinden oku
 - `MYG.RideR.Mobile.csproj`: `MauiIcon`/`MauiSplashScreen` `Color="#512BD4"` → tema arka plan rengi (`Themes/Colors.xaml` içindeki ana koyu renk).
 
 ## Notlar
+- Kapsam dışı (referanstaki Nav. sekmesi): adres arama + rota tarifi. Ayrı faz; ücretsiz servis (OSRM/Nominatim) kullanım politikası incelenmeli.
 - #1 cihaz testi kullanıcı isteğiyle en sona ertelendi; 2/11/12/13 cihazda doğrulanmadan bitti sayılır, cihaz testinde çıkanlar #3'e eklenir.
 - Kapsam dışı (canlı akış işinden): grafikler, harita rota+marker, uydu sayısı, vites, yakıt, canlı pil.
 - Sonraki aday (henüz görev değil): "hareket halinde ortalama hız" (duruşlar hariç); `MapPanel` konumu `ILiveLocationFeed`'den alsın ve rota çizgisi göstersin.
