@@ -1,3 +1,11 @@
+<div align="center">
+  <a href="https://myusufgultekin.web.app/"><img src="./assets/myg-project-banner.svg" alt="MYG RIDER — MYG Tech" width="100%"></a>
+  <p><img src="https://img.shields.io/badge/.NET%20MAUI-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET MAUI"> <img src="https://img.shields.io/badge/C%23-MVVM-239120?style=for-the-badge&logo=csharp&logoColor=white" alt="C sharp"> <img src="https://img.shields.io/badge/ANDROID-iOS-WINDOWS-2563EB?style=for-the-badge" alt="Platforms"></p>
+  <p><a href="https://myusufgultekin.web.app/">MYG TECH</a> · <a href="https://github.com/nicewo">GitHub Profile</a></p>
+</div>
+
+---
+
 <p align="center"><img src="assets/logo.png" alt="MYG RideR" width="220" /></p>
 
 # MYG RideR
